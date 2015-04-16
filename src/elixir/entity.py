@@ -15,8 +15,10 @@ import sqlalchemy
 from sqlalchemy import Table, Column, Integer, desc, ForeignKey, and_, \
                        ForeignKeyConstraint
 from sqlalchemy.orm import MapperExtension, mapper, object_session, \
-                           EXT_CONTINUE, polymorphic_union, ScopedSession, \
+                           EXT_CONTINUE, polymorphic_union, \
                            ColumnProperty
+#                           EXT_CONTINUE, polymorphic_union, ScopedSession, \
+from sqlalchemy.orm import scoped_session as ScopedSession
 from sqlalchemy.sql import ColumnCollection
 
 import elixir
