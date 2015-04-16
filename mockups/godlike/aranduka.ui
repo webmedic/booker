@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1032</width>
+    <height>700</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QWidget" name="widget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>10</y>
+      <width>951</width>
+      <height>581</height>
+     </rect>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1032</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuSi_aca_van_los_menuses">
+    <property name="title">
+     <string>Si, aca van los menuses</string>
+    </property>
+    <addaction name="actionPero_no_puse_nada_todavia"/>
+   </widget>
+   <addaction name="menuSi_aca_van_los_menuses"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionMain"/>
+   <addaction name="actionView_Queue"/>
+   <addaction name="separator"/>
+   <addaction name="actionShelves"/>
+   <addaction name="actionTags"/>
+  </widget>
+  <action name="actionPero_no_puse_nada_todavia">
+   <property name="text">
+    <string>Pero no puse nada todavia</string>
+   </property>
+  </action>
+  <action name="actionMain">
+   <property name="text">
+    <string>Main</string>
+   </property>
+  </action>
+  <action name="actionView_Queue">
+   <property name="text">
+    <string>View Queue</string>
+   </property>
+  </action>
+  <action name="actionShelves">
+   <property name="text">
+    <string>Shelves</string>
+   </property>
+  </action>
+  <action name="actionTags">
+   <property name="text">
+    <string>Tags</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <item>
+     <widget class="QSplitter" name="splitter">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <widget class="QWidget" name="">
+       <layout class="QVBoxLayout" name="verticalLayout">
+        <item>
+         <widget class="QTreeWidget" name="treeWidget">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>1</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <column>
+           <property name="text">
+            <string>Ordered</string>
+           </property>
+          </column>
+          <item>
+           <property name="text">
+            <string>By Title</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>By Author</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>By Tag</string>
+           </property>
+           <item>
+            <property name="text">
+             <string>Unread</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Currently Reading</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Scifi</string>
+            </property>
+           </item>
+          </item>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTreeWidget" name="treeWidget_2">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>1</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <column>
+           <property name="text">
+            <string>Libraries and Bookstores</string>
+           </property>
+          </column>
+          <item>
+           <property name="text">
+            <string>Feedbooks</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Smashwords</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>ManyBooks</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>View:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="toolButton">
+            <property name="text">
+             <string>Covers</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="toolButton_2">
+            <property name="text">
+             <string>List</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="">
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <item>
+         <widget class="QScrollArea" name="scrollArea">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>2</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>371</width>
+             <height>644</height>
+            </rect>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_3">
+            <item>
+             <widget class="QListWidget" name="listWidget_5">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>156</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">background-color: qlineargradient(spread:pad, x1:0, y1:1, x2:0, y2:0, stop:0 rgba(190, 190, 190, 255), stop:0.137566 rgba(255, 255, 255, 255));</string>
+              </property>
+              <property name="iconSize">
+               <size>
+                <width>128</width>
+                <height>128</height>
+               </size>
+              </property>
+              <property name="viewMode">
+               <enum>QListView::IconMode</enum>
+              </property>
+              <item>
+               <property name="text">
+                <string>Libro 1</string>
+               </property>
+               <property name="icon">
+                <iconset>
+                 <normaloff>tapa1.jpeg</normaloff>tapa1.jpeg</iconset>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Libro 2</string>
+               </property>
+               <property name="icon">
+                <iconset>
+                 <normaloff>tapa1.jpeg</normaloff>tapa1.jpeg</iconset>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item>
+             <widget class="QListWidget" name="listWidget">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>156</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">background-color: qlineargradient(spread:pad, x1:0, y1:1, x2:0, y2:0, stop:0 rgba(190, 190, 190, 255), stop:0.137566 rgba(255, 255, 255, 255));</string>
+              </property>
+              <property name="iconSize">
+               <size>
+                <width>128</width>
+                <height>128</height>
+               </size>
+              </property>
+              <property name="viewMode">
+               <enum>QListView::IconMode</enum>
+              </property>
+              <item>
+               <property name="text">
+                <string>Libro 1</string>
+               </property>
+               <property name="icon">
+                <iconset>
+                 <normaloff>tapa1.jpeg</normaloff>tapa1.jpeg</iconset>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Libro 2</string>
+               </property>
+               <property name="icon">
+                <iconset>
+                 <normaloff>tapa1.jpeg</normaloff>tapa1.jpeg</iconset>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item>
+             <widget class="QListWidget" name="listWidget_6">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>156</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">background-color: qlineargradient(spread:pad, x1:0, y1:1, x2:0, y2:0, stop:0 rgba(190, 190, 190, 255), stop:0.137566 rgba(255, 255, 255, 255));</string>
+              </property>
+              <property name="iconSize">
+               <size>
+                <width>128</width>
+                <height>128</height>
+               </size>
+              </property>
+              <property name="viewMode">
+               <enum>QListView::IconMode</enum>
+              </property>
+              <item>
+               <property name="text">
+                <string>Libro 1</string>
+               </property>
+               <property name="icon">
+                <iconset>
+                 <normaloff>tapa1.jpeg</normaloff>tapa1.jpeg</iconset>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Libro 2</string>
+               </property>
+               <property name="icon">
+                <iconset>
+                 <normaloff>tapa1.jpeg</normaloff>tapa1.jpeg</iconset>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item>
+             <widget class="QListWidget" name="listWidget_2">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>156</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">background-color: qlineargradient(spread:pad, x1:0, y1:1, x2:0, y2:0, stop:0 rgba(190, 190, 190, 255), stop:0.137566 rgba(255, 255, 255, 255));</string>
+              </property>
+              <property name="iconSize">
+               <size>
+                <width>128</width>
+                <height>128</height>
+               </size>
+              </property>
+              <property name="viewMode">
+               <enum>QListView::IconMode</enum>
+              </property>
+              <item>
+               <property name="text">
+                <string>Libro 1</string>
+               </property>
+               <property name="icon">
+                <iconset>
+                 <normaloff>tapa1.jpeg</normaloff>tapa1.jpeg</iconset>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Libro 2</string>
+               </property>
+               <property name="icon">
+                <iconset>
+                 <normaloff>tapa1.jpeg</normaloff>tapa1.jpeg</iconset>
+               </property>
+              </item>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>800</width>
+     <height>24</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

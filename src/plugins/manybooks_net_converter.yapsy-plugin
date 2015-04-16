@@ -1,0 +1,9 @@
+[Core]
+Name = Manybooks.net Converter
+Module = manybooks_net_converter
+
+[Documentation]
+Author = Andrés Gattinoni
+Version = 0.1
+Website = http://aranduka.googlecode.com
+Description = If a book has a Manybooks.net ID, it can "convert" it to other formats by downloading them.

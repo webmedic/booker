@@ -1,0 +1,9 @@
+[Core]
+Name = RSS
+Module = rss
+
+[Documentation]
+Author = Roberto Alsina
+Version = 0.1
+Website = http://aranduka.googlecode.com
+Description = Download RSS feeds and store them as periodicals

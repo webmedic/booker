@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='utf-8'?>
+<package xmlns="http://www.idpf.org/2007/opf" version="2.0" unique-identifier="uuid_id">
+  <metadata xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:opf="http://www.idpf.org/2007/opf" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:calibre="http://calibre.kovidgoyal.net/2009/metadata" xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dc:language>en</dc:language>
+    <dc:creator>Aranduka</dc:creator>
+    <meta name="calibre:timestamp" content="2010-09-24T22:39:57.503633+00:00"/>
+    <dc:title>${feed.title}$</dc:title>
+    <meta name="cover" content="cover_image"/>
+    <dc:identifier id="uuid_id" opf:scheme="uuid">fa3ebf95-ad8e-4a14-b3eb-f670ac21d367</dc:identifier>
+  </metadata>
+  <manifest>
+    ${
+       for i, post in enumerate(posts):
+           emit('''<item href="%s.html" id="html%s" media-type="application/xhtml+xml"/>'''%(i,i))
+    }$
+    <item href="cover_image.jpg" id="cover_image" media-type="image/jpeg"/>
+    <item href="out.html" id="html" media-type="application/xhtml+xml"/>
+    <item href="screen.css" id="css1" media-type="text/css"/>
+    <item href="style.css" id="css2" media-type="text/css"/>
+    <item href="titlepage.xhtml" id="titlepage" media-type="application/xhtml+xml"/>
+    <item href="toc.ncx" media-type="application/x-dtbncx+xml" id="ncx"/>
+  </manifest>
+  <spine toc="ncx">
+    <itemref idref="titlepage"/>
+    <itemref idref="html"/>
+    ${
+       for i, post in enumerate(posts):
+           emit('''<itemref idref="html%s"/>'''%(i))
+    }$
+  </spine>
+  <guide>
+    <reference href="titlepage.xhtml" type="cover" title="Title Page"/>
+  </guide>
+</package>

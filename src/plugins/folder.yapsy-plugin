@@ -1,0 +1,9 @@
+[Core]
+Name = Folder Device
+Module = folder
+
+[Documentation]
+Author = Roberto Alsina
+Version = 0.1
+Website = http://aranduka.googlecode.com
+Description = Sync one or more tags to a folder

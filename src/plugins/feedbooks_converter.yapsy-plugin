@@ -1,0 +1,9 @@
+[Core]
+Name = FeedBooks Converter
+Module = feedbooks_converter
+
+[Documentation]
+Author = Roberto Alsina
+Version = 0.1
+Website = http://aranduka.googlecode.com
+Description = If a book has a feedbooks ID, it can "convert" it to other formats by downloading them.

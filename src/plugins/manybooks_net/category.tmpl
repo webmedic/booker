@@ -1,0 +1,99 @@
+<html>
+<head>
+    <script type="text/javascript">
+    function downloadBook (o) {
+    	catalog.openUrl(o.options[o.selectedIndex].value);
+    }
+    </script>
+</head>
+<body>
+<h3>${title}$</h3>
+
+${
+		
+def page_link(link):
+    return '<span style="border: solid 1px lightgrey; background_color: white; margin:4px; padding: 4px;">%s</span>'%(link)
+		
+def pager():
+    result = ''
+    if prevPage: result +=page_link(prevPage)
+    if nextPage: result +=page_link(nextPage)
+    return result
+}$
+
+
+${ if prevPage or nextPage: }$
+<div style="text-align: right; width:90%; margin-left: 5%; margin-bottom: 8px;">
+${print pager()}$
+</div>
+${:endif}$
+
+${for book in books:}$
+${
+    if not book.get('links',[]):
+        continue
+    iurl = book.cover_url
+    title = book.title
+    author = book.author
+    acq_links = []
+    for l in book.links:
+        code = l.split('/')[4]
+        if code == 'mnybksjar':
+            ext = 'jar'
+        else:
+            ext = code.split(':')[1]
+        acq_links.append('<option value="%s">%s</option>'%(l, ext))
+}$
+<div style="min-height: 128px; border: solid 3px lightgrey; padding: 15px; border-radius: 15px; margin: 6px; -webkit-transition: all 500ms linear;" 
+ onmouseover="this.style.border='solid 3px lightgreen'; this.style.backgroundColor='lightgreen'; "
+ onmouseout="this.style.border='solid 3px lightgrey'; this.style.backgroundColor='white';"
+ >
+     <img width="64px" style="float: left; margin-right: 4px;" src="${iurl}$.jpg">
+	 <div style="text-align: right; margin-top: 12px;">		
+        <b>${title}$</b> by ${author}$</br>
+        ${
+            emit(book.get('subtitle','').replace('Subtitle: </strong><br /><br />','')+'</br>')
+        }$
+        ${ if acq_links: }$
+            <p><select onchange="javascript:downloadBook(this);">
+                <option value="">Download</option>
+                ${ emit("\n".join(acq_links)) }$
+            </select></p>
+        ${:endif}$
+	</div>
+</div>
+${:end-for}$
+
+${for link in links:}$
+${
+    if not link.get('links',[]):
+        continue
+    iurl = link.links[0].href
+    if len(link.links) > 1:
+        icon_url = link.links[1].href
+        h = 'min-height: 128px;'
+    else:
+        icon_url = None
+        h = ''
+    title = link.title
+    subtitle = link.get('subtitle','')
+    if '<' not in subtitle:
+	    subtitle = subtitle.replace('\n','<p>')
+}$
+<div style="${h}$ border: solid 3px lightgrey; padding: 15px; border-radius: 15px; margin: 6px; -webkit-transition: all 500ms linear;" 
+ onmouseover="this.style.border='solid 3px lightgreen'; this.style.backgroundColor='lightgreen'; "
+ onmouseout="this.style.border='solid 3px lightgrey'; this.style.backgroundColor='white';"
+ >
+     <img width="64px" style="float: right; margin-right: 4px;" src="${icon_url}$">
+	 <div style="text-align: left; margin-top: 12px;">		
+        <b><a href="${iurl}$">${title}$</a></b></br>
+        ${subtitle}$
+	 </div>		
+</div>
+${:end-for}$
+
+${ if prevPage or nextPage: }$
+<div style="text-align: right; width:90%; margin-left: 5%; margin-bottom: 8px;">
+${print pager()}$
+</div>
+${:endif}$

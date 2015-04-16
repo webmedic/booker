@@ -1,0 +1,9 @@
+[Core]
+Name = Google Books Guesser
+Module = guess_google
+
+[Documentation]
+Author = Roberto Alsina
+Version = 0.1
+Website = http://aranduka.googlecode.com
+Description = Guess a book's data by looking it up at books.google.com

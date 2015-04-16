@@ -1,0 +1,17 @@
+<RCC>
+  <qresource prefix="/">
+    <file>icons/go-next.svg</file>
+    <file>icons/view-fullscreen.svg</file>
+    <file>icons/reload.svg</file>
+    <file>icons/plus.svg</file>
+    <file>aranduka-icon.png</file>
+    <file>icons/minus.svg</file>
+    <file>icons/configure.svg</file>
+    <file>icons/go-previous.svg</file>
+    <file>icons/gtk-close.svg</file>
+    <file>icons/list_view_selected.svg</file>
+    <file>icons/icon_view_selected.svg</file>
+    <file>icons/list_view.svg</file>
+    <file>icons/icon_view.svg</file>
+  </qresource>
+</RCC>

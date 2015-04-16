@@ -1,0 +1,4 @@
+Known Issues in Ubuntu 10.04
+============================
+
+* You need to manually install latest gdata-client because the one in the repos is too old. Get it from http://code.google.com/p/gdata-python-client/

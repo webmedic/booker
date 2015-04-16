@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='utf-8'?>
+<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1" xml:lang="en">
+  <head>
+    <meta content="fa3ebf95-ad8e-4a14-b3eb-f670ac21d367" name="dtb:uid"/>
+    <meta content="1" name="dtb:depth"/>
+    <meta content="Aranduka" name="dtb:generator"/>
+    <meta content="0" name="dtb:totalPageCount"/>
+    <meta content="0" name="dtb:maxPageNumber"/>
+  </head>
+  <docTitle>
+    <text>${emit(feed.title)}$</text>
+  </docTitle>
+  <navMap>
+  ${
+    for i, post in enumerate(posts):
+        emit('''
+    <navPoint id="%s" playOrder="%s">
+      <navLabel>
+        <text>%s</text>
+      </navLabel>
+      <content src="%s.html"/>
+    </navPoint>        
+        '''%(i,i,escape(post.get('title','No Title')),i))
+  }$
+  </navMap>
+</ncx>

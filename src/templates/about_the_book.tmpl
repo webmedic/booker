@@ -1,0 +1,48 @@
+<html>
+	<head>
+		<title>&quot;${title}$&quot; by ${', '.join([a.name for a in authors]) or ""}$</title>
+	</head>
+    <body>
+        <div id="container" style="-webkit-transition: all 500ms linear;">
+            
+            <img src="${thumb}$">
+
+            <div class="BookInfo">
+                <h1>&quot;${title}$&quot;</h1>
+                <h2>by ${', '.join([a.name for a in authors]) or ""}$</h2>
+                <ul>
+                ${for identifier in identifiers:}$
+                    <li>${identifier[0]}$: ${identifier[1]}$</li>
+                ${:end-for}$
+                </ul>
+                <h3>Tags for this book</h3>
+                <ul>
+                ${for tag in tags:}$
+                    <li>${tag}$</li>
+                ${:end-for}$
+                </ul>
+                <h3>Files for this book</h3>
+                <ul>
+                ${for fname in files:}$
+                    <li>${fname}$ | <a href="open:${fname}$">open</a> | <a href="del:${fname}$">delete</a> </li>
+                ${:end-for}$
+                <li><a href="del:book">Delete Book</a></li>
+                </ul>
+                
+                <!--
+                <h3>Quotes in this Book</h3>
+                <ul>
+                ${for quote in quotes:}$
+                    <li>&quot;${quote}$&quot;</li>
+                ${:end-for}$
+                </ul>
+                -->
+            </div>
+            
+            <div class="social">
+                <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://aranduka.googlecode.com" data-text="Reading &quot;${title}$&quot; by ${', '.join([a.name for a in authors])}$" data-count="horizontal" data-via="ralgozino" data-lang="en">Tweet</a><script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script>
+            </div>
+
+        </div>
+    </body>
+</html>

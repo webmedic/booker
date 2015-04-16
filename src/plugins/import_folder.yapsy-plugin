@@ -1,0 +1,9 @@
+[Core]
+Name = Import Folder
+Module = import_folder
+
+[Documentation]
+Author = Roberto Alsina
+Version = 0.1
+Website = http://aranduka.googlecode.com
+Description = Import a full folder of books.

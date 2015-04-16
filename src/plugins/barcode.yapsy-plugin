@@ -1,0 +1,9 @@
+[Core]
+Name = Barcode Scanner
+Module = barcode
+
+[Documentation]
+Author = Roberto Alsina
+Version = 0.1
+Website = http://aranduka.googlecode.com
+Description = Add a book by scanning a barcode

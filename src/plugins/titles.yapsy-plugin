@@ -1,0 +1,9 @@
+[Core]
+Name = Books By Title
+Module = titles
+
+[Documentation]
+Author = Roberto Alsina
+Version = 0.1
+Website = http://aranduka.googlecode.com
+Description = List books by title

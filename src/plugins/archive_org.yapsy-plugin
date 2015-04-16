@@ -1,0 +1,9 @@
+[Core]
+Name = archive_org
+Module = archive_org
+
+[Documentation]
+Author = Roberto Alsina
+Version = 0.1
+Website = http://aranduka.googlecode.com
+Description = Download books from archive.org

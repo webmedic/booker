@@ -1,0 +1,9 @@
+[Core]
+Name = Folder Device
+Module = device
+
+[Documentation]
+Author = Roberto Alsina
+Version = 0.1
+Website = http://aranduka.googlecode.com
+Description = Syncs a tag to a folder when a device is plugged

@@ -1,0 +1,23 @@
+BookStores
+----------
+
+http://arxiv.org/help/api/user-manual
+http://wiki.librivox.org/index.php/LibriVoxAPI (audiobooks!)
+
+New Plugin Types
+----------------
+
+Importers (move importer.py, add others?)
+
+Converters (using calibre or something else)
+
+Viewers (ePub, audioboks, PDF, etc.)
+
+Device detector (for syncing)
+
+See
+
+http://hal.freedesktop.org/docs/DeviceKit-disks/Device.html
+http://moserei.de/index.php/179/accessing-devicekit-with-dbus-and-python
+http://library.gnome.org/devel/gio/unstable/GVolumeMonitor.html
+

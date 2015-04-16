@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en" xml:lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>#{post.title}</title>
+    <link rel="stylesheet" href="screen.css" type="text/css" media="screen, projection" />
+    <link rel="stylesheet" href="style.css" type="text/css" media="screen, projection" />
+</head>
+<body>
+<h1>${emit(feed.title)}$</h1>
+    <ul>
+    ${
+        for i, post in enumerate(posts):
+            emit('<li> <a href="%s.html">%s</a> </li>'%(i,post.title))
+    }$
+    </ul>
+</body>
+</html>

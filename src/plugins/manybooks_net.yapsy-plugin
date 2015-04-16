@@ -1,0 +1,9 @@
+[Core]
+Name = manybooks_net
+Module = manybooks_net
+
+[Documentation]
+Author = Roberto Alsina
+Version = 0.1
+Website = http://aranduka.googlecode.com
+Description = Download books from manybooks.net

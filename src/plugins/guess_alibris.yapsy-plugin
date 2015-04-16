@@ -1,0 +1,9 @@
+[Core]
+Name = Alibris Guesser
+Module = guess_alibris
+
+[Documentation]
+Author = Andrés Gattinoni
+Version = 0.1
+Website = http://aranduka.googlecode.com
+Description = Guess a book's data by looking it up in Alibris.com

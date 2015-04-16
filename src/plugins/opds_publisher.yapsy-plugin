@@ -1,0 +1,9 @@
+[Core]
+Name = OPDS Publisher
+Module = opds_publisher
+
+[Documentation]
+Author = Roberto Alsina
+Version = 0.1
+Website = http://aranduka.googlecode.com
+Description = Publish a OPDS catalog
