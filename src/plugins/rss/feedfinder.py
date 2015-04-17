@@ -1,357 +1,252 @@
-# -*- coding: utf-8 -*-
-"""feedfinder: Find the Web feed for a Web page
-http://www.aaronsw.com/2002/feedfinder/
+"""
+FeedFinder
+==============
 
-Usage:
-  feed(uri) - returns feed found for a URI
-  feeds(uri) - returns all feeds found for a URI
+Tries to find feeds for
+a given URL.
 
-    >>> import feedfinder
-    >>> feedfinder.feed('scripting.com')
-    'http://scripting.com/rss.xml'
-    >>>
-    >>> feedfinder.feeds('scripting.com')
-    ['http://delong.typepad.com/sdj/atom.xml', 
-     'http://delong.typepad.com/sdj/index.rdf', 
-     'http://delong.typepad.com/sdj/rss.xml']
-    >>>
+This is essentially a rewrite
+of feedfinder.py,
+originally by Mark Pilgrim
+and Aaron Swartz.
 
-Can also use from the command line.  Feeds are returned one per line:
+Credits from the original:
+Abe Fettig for a patch to sort Syndic8 feeds by popularity
+Also Jason Diamond, Brian Lalor for bug reporting and patches
 
-    $ python feedfinder.py diveintomark.org
-    http://diveintomark.org/xml/atom.xml
+Original is located at:
+    http://www.aaronsw.com/2002/feedfinder/
 
 How it works:
-  0. At every step, feeds are minimally verified to make sure they are really feeds.
-  1. If the URI points to a feed, it is simply returned; otherwise
-     the page is downloaded and the real fun begins.
-  2. Feeds pointed to by LINK tags in the header of the page (autodiscovery)
-  3. <A> links to feeds on the same server ending in ".rss", ".rdf", ".xml", or 
-     ".atom"
-  4. <A> links to feeds on the same server containing "rss", "rdf", "xml", or "atom"
-  5. <A> links to feeds on external servers ending in ".rss", ".rdf", ".xml", or 
-     ".atom"
-  6. <A> links to feeds on external servers containing "rss", "rdf", "xml", or "atom"
-  7. Try some guesses about common places for feeds (index.xml, atom.xml, etc.).
-  8. As a last ditch effort, we search Syndic8 for feeds matching the URI
+    0. At every step, feeds are minimally verified to make sure they are really feeds.
+    1. If the URI points to a feed, it is simply returned; otherwise
+       the page is downloaded and the real fun begins.
+    2. Feeds pointed to by LINK tags in the header of the page (autodiscovery)
+    3. <A> links to feeds on the same server ending in ".rss", ".rdf", ".xml", or
+       ".atom"
+    4. <A> links to feeds on the same server containing "rss", "rdf", "xml", or "atom"
+    5. Try some guesses about common places for feeds (index.xml, atom.xml, etc.).
+    6. <A> links to feeds on external servers ending in ".rss", ".rdf", ".xml", or
+       ".atom"
+    7. <A> links to feeds on external servers containing "rss", "rdf", "xml", or "atom"
+
+Copyright:
+    2002-2004: Mark Pilgrim
+    2006: Aaron Swartz
+    2013: Francis Tseng
 """
 
-__version__ = "1.371"
-__date__ = "2006-04-24"
-__maintainer__ = "Aaron Swartz (me@aaronsw.com)"
-__author__ = "Mark Pilgrim (http://diveintomark.org)"
-__copyright__ = "Copyright 2002-4, Mark Pilgrim; 2006 Aaron Swartz"
-__license__ = "Python"
-__credits__ = """Abe Fettig for a patch to sort Syndic8 feeds by popularity
-Also Jason Diamond, Brian Lalor for bug reporting and patches"""
-
-_debug = 0
-
-import sgmllib, urllib, urlparse, re, sys, robotparser
-
-import threading
-class TimeoutError(Exception): pass
-def timelimit(timeout):
-    """borrowed from web.py"""
-    def _1(function):
-        def _2(*args, **kw):
-            class Dispatch(threading.Thread):
-                def __init__(self):
-                    threading.Thread.__init__(self)
-                    self.result = None
-                    self.error = None
-                    
-                    self.setDaemon(True)
-                    self.start()
-
-                def run(self):
-                    try:
-                        self.result = function(*args, **kw)
-                    except:
-                        self.error = sys.exc_info()
-
-            c = Dispatch()
-            c.join(timeout)
-            if c.isAlive():
-                raise TimeoutError, 'took too long'
-            if c.error:
-                raise c.error[0], c.error[1]
-            return c.result
-        return _2
-    return _1
-    
-# XML-RPC support allows feedfinder to query Syndic8 for possible matches.
-# Python 2.3 now comes with this module by default, otherwise you can download it
+# Python 2.7 support.
 try:
-    import xmlrpclib # http://www.pythonware.com/products/xmlrpc/
+    from urllib import request, parse
 except ImportError:
-    xmlrpclib = None
+    import urllib2 as request
+    import urllib.parse as parse
 
-if not dict:
-    def dict(aList):
-        rc = {}
-        for k, v in aList:
-            rc[k] = v
-        return rc
-    
-def _debuglog(message):
-    if _debug: print message
-    
-class URLGatekeeper:
-    """a class to track robots.txt rules across multiple servers"""
-    def __init__(self):
-        self.rpcache = {} # a dictionary of RobotFileParser objects, by domain
-        self.urlopener = urllib.FancyURLopener()
-        self.urlopener.version = "feedfinder/" + __version__ + " " + self.urlopener.version + " +http://www.aaronsw.com/2002/feedfinder/"
-        _debuglog(self.urlopener.version)
-        self.urlopener.addheaders = [('User-agent', self.urlopener.version)]
-        robotparser.URLopener.version = self.urlopener.version
-        robotparser.URLopener.addheaders = self.urlopener.addheaders
-        
-    def _getrp(self, url):
-        protocol, domain = urlparse.urlparse(url)[:2]
-        if self.rpcache.has_key(domain):
-            return self.rpcache[domain]
-        baseurl = '%s://%s' % (protocol, domain)
-        robotsurl = urlparse.urljoin(baseurl, 'robots.txt')
-        _debuglog('fetching %s' % robotsurl)
-        rp = robotparser.RobotFileParser(robotsurl)
-        try:
-            rp.read()
-        except:
-            pass
-        self.rpcache[domain] = rp
-        return rp
-        
-    def can_fetch(self, url):
-        rp = self._getrp(url)
-        allow = rp.can_fetch(self.urlopener.version, url)
-        _debuglog("gatekeeper of %s says %s" % (url, allow))
-        return allow
+import lxml.html
+import chardet
 
-    @timelimit(10)
-    def get(self, url, check=True):
-        if check and not self.can_fetch(url): return ''
-        try:
-            return self.urlopener.open(url).read()
-        except:
-            return ''
+def feeds(url):
+    """
+    Tries to find feeds
+    for a given URL.
+    """
 
-_gatekeeper = URLGatekeeper()
+    url = _full_url(url)
+    data = _get(url)
 
-class BaseParser(sgmllib.SGMLParser):
-    def __init__(self, baseuri):
-        sgmllib.SGMLParser.__init__(self)
-        self.links = []
-        self.baseuri = baseuri
-        
-    def normalize_attrs(self, attrs):
-        def cleanattr(v):
-            v = sgmllib.charref.sub(lambda m: unichr(int(m.groups()[0])), v)
-            v = v.strip()
-            v = v.replace('&lt;', '<').replace('&gt;', '>').replace('&apos;', "'").replace('&quot;', '"').replace('&amp;', '&')
-            return v
-        attrs = [(k.lower(), cleanattr(v)) for k, v in attrs]
-        attrs = [(k, k in ('rel','type') and v.lower() or v) for k, v in attrs]
-        return attrs
-        
-    def do_base(self, attrs):
-        attrsD = dict(self.normalize_attrs(attrs))
-        if not attrsD.has_key('href'): return
-        self.baseuri = attrsD['href']
-    
-    def error(self, *a, **kw): pass # we're not picky
-        
-class LinkParser(BaseParser):
+    # Check if the url is a feed.
+    if _is_feed(url):
+        return [url]
+
+    # Try to get feed links from markup.
+    try:
+        feed_links = [link for link in _get_feed_links(data, url) if _is_feed(link)]
+    except:
+        feed_links = []
+    if feed_links:
+        return feed_links
+
+    # Try 'a' links.
+    try:
+        links = _get_a_links(data)
+    except:
+        links = []
+
+    if links:
+        # Filter to only local links.
+        local_links = [link for link in links if link.startswith(url)]
+
+        # Try to find feed links.
+        feed_links.extend(_filter_feed_links(local_links))
+
+        # If still nothing has been found...
+        if not feed_links:
+            # Try to find feed-looking links.
+            feed_links.extend(_filter_feedish_links(local_links))
+
+    # If still nothing has been found...
+    if not feed_links:
+        # BRUTE FORCE IT!
+        guesses = [
+                'atom.xml',     # Blogger, TypePad
+                'index.atom',   # MoveableType
+                'index.rdf',    # MoveableType
+                'rss.xml',      # Dave Winer/Manila
+                'index.xml',    # MoveableType
+                'index.rss',    # Slash
+                'feed'          # WordPress
+        ]
+        tries = [parse.urljoin(url, g) for g in guesses]
+        feed_links.extend([link for link in tries if _is_feed(link)])
+
+    # If *still* nothing has been found,
+    # just try all the links.
+    if links and not feed_links:
+            feed_links.extend(_filter_feed_links(links))
+            feed_links.extend(_filter_feedish_links(links))
+
+    # Filter out duplicates.
+    return list(set(feed_links))
+
+
+def feed(url):
+    feed_links = feeds(url)
+    if feed_links:
+        return feed_links[0]
+    else:
+        return None
+
+
+def _full_url(url):
+    """
+    Assemble the full url
+    for a url.
+    """
+
+    url = url.strip()
+    for x in ['http', 'https']:
+        if url.startswith('%s://' % x):
+            return url
+    return 'http://%s' % url
+
+
+def _get_feed_links(data, url):
+    """
+    Try to get feed links
+    defined in the markup.
+    """
+
     FEED_TYPES = ('application/rss+xml',
                   'text/xml',
                   'application/atom+xml',
                   'application/x.atom+xml',
                   'application/x-atom+xml')
-    def do_link(self, attrs):
-        attrsD = dict(self.normalize_attrs(attrs))
-        if not attrsD.has_key('rel'): return
-        rels = attrsD['rel'].split()
-        if 'alternate' not in rels: return
-        if attrsD.get('type') not in self.FEED_TYPES: return
-        if not attrsD.has_key('href'): return
-        self.links.append(urlparse.urljoin(self.baseuri, attrsD['href']))
+    links = []
+    html = lxml.html.fromstring(data)
 
-class ALinkParser(BaseParser):
-    def start_a(self, attrs):
-        attrsD = dict(self.normalize_attrs(attrs))
-        if not attrsD.has_key('href'): return
-        self.links.append(urlparse.urljoin(self.baseuri, attrsD['href']))
+    # For each link...
+    for link in html.xpath('//link'):
 
-def makeFullURI(uri):
-    uri = uri.strip()
-    if uri.startswith('feed://'):
-        uri = 'http://' + uri.split('feed://', 1).pop()
-    for x in ['http', 'https']:
-        if uri.startswith('%s://' % x):
-            return uri
-    return 'http://%s' % uri
+        # Try to get the 'rel' attribute.
+        rel = link.attrib.get('rel', False)
+        href = link.attrib.get('href', False)
+        type = link.attrib.get('type', False)
 
-def getLinks(data, baseuri):
-    p = LinkParser(baseuri)
-    p.feed(data)
-    return p.links
+        # Check some things.
+        if not rel or not href or not type: continue
+        if 'alternate' not in rel.split(): continue
+        if type not in FEED_TYPES: continue
 
-def getALinks(data, baseuri):
-    p = ALinkParser(baseuri)
-    p.feed(data)
-    return p.links
+        links.append(parse.urljoin(url, href))
+    return links
 
-def getLocalLinks(links, baseuri):
-    baseuri = baseuri.lower()
-    urilen = len(baseuri)
-    return [l for l in links if l.lower().startswith(baseuri)]
 
-def isFeedLink(link):
-    return link[-4:].lower() in ('.rss', '.rdf', '.xml', '.atom')
+def _get_a_links(data):
+    """
+    Gathers all 'a' links
+    from the markup.
+    """
 
-def isXMLRelatedLink(link):
-    link = link.lower()
-    return link.count('rss') + link.count('rdf') + link.count('xml') + link.count('atom')
+    html = lxml.html.fromstring(data)
+    return html.xpath('//a/@href')
 
-r_brokenRedirect = re.compile('<newLocation[^>]*>(.*?)</newLocation>', re.S)
-def tryBrokenRedirect(data):
-    if '<newLocation' in data:
-        newuris = r_brokenRedirect.findall(data)
-        if newuris: return newuris[0].strip()
 
-def couldBeFeedData(data):
-    data = data.lower()
-    if data.count('<html'): return 0
+def _is_feed(url):
+    """
+    Test if a given URL is
+    a feed.
+    """
+
+    # If it's not HTTP or HTTPS,
+    # it's not a feed.
+    scheme = parse.urlparse(url).scheme
+    if scheme not in ('http', 'https'):
+        return 0
+
+    data = _get(url)
+
+    # If an html tag is present,
+    # assume it's not a feed.
+    if data.count('<html'):
+        return 0
+
     return data.count('<rss') + data.count('<rdf') + data.count('<feed')
 
-def isFeed(uri):
-    _debuglog('seeing if %s is a feed' % uri)
-    protocol = urlparse.urlparse(uri)
-    if protocol[0] not in ('http', 'https'): return 0
-    data = _gatekeeper.get(uri)
-    return couldBeFeedData(data)
 
-def sortFeeds(feed1Info, feed2Info):
-    return cmp(feed2Info['headlines_rank'], feed1Info['headlines_rank'])
+def _is_feed_link(url):
+    """
+    Check if a link is
+    a feed link.
+    """
+    return url[-4:] in ('.rss', '.rdf', '.xml', '.atom')
 
-def getFeedsFromSyndic8(uri):
-    feeds = []
+
+def _filter_feed_links(links):
+    """
+    Filters a list of links
+    for only feed links.
+    """
+    candidates = [link for link in links if _is_feed_link(link)]
+    return [link for link in candidates if _is_feed(link)]
+
+
+def _filter_feedish_links(links):
+    """
+    Filters a list of links
+    for links that *look* like
+    they may be feed links.
+    """
+    feed_links = []
+    for link in links:
+        if link.count('rss') + link.count('rdf') + link.count('xml') + link.count('atom'):
+            if _is_feed(link):
+                feed_links.append(link)
+    return feed_links
+
+
+def _get(url):
+    """
+    Tries to access the url
+    and return its data.
+    """
+
+    req = request.Request(url)
+
     try:
-        server = xmlrpclib.Server('http://www.syndic8.com/xmlrpc.php')
-        feedids = server.syndic8.FindFeeds(uri)
-        infolist = server.syndic8.GetFeedInfo(feedids, ['headlines_rank','status','dataurl'])
-        infolist.sort(sortFeeds)
-        feeds = [f['dataurl'] for f in infolist if f['status']=='Syndicated']
-        _debuglog('found %s feeds through Syndic8' % len(feeds))
-    except:
-        pass
-    return feeds
-    
-def feeds(uri, all=False, querySyndic8=False, _recurs=None):
-    if _recurs is None: _recurs = [uri]
-    fulluri = makeFullURI(uri)
-    try:
-        data = _gatekeeper.get(fulluri, check=False)
-    except:
-        return []
-    # is this already a feed?
-    if couldBeFeedData(data):
-        return [fulluri]
-    newuri = tryBrokenRedirect(data)
-    if newuri and newuri not in _recurs:
-        _recurs.append(newuri)
-        return feeds(newuri, all=all, querySyndic8=querySyndic8, _recurs=_recurs)
-    # nope, it's a page, try LINK tags first
-    _debuglog('looking for LINK tags')
-    try:
-        outfeeds = getLinks(data, fulluri)
-    except:
-        outfeeds = []
-    _debuglog('found %s feeds through LINK tags' % len(outfeeds))
-    outfeeds = filter(isFeed, outfeeds)
-    if all or not outfeeds:
-        # no LINK tags, look for regular <A> links that point to feeds
-        _debuglog('no LINK tags, looking at A tags')
-        try:
-            links = getALinks(data, fulluri)
-        except:
-            links = []
-        locallinks = getLocalLinks(links, fulluri)
-        # look for obvious feed links on the same server
-        outfeeds.extend(filter(isFeed, filter(isFeedLink, locallinks)))
-        if all or not outfeeds:
-            # look harder for feed links on the same server
-            outfeeds.extend(filter(isFeed, filter(isXMLRelatedLink, locallinks)))
-        if all or not outfeeds:
-            # look for obvious feed links on another server
-            outfeeds.extend(filter(isFeed, filter(isFeedLink, links)))
-        if all or not outfeeds:
-            # look harder for feed links on another server
-            outfeeds.extend(filter(isFeed, filter(isXMLRelatedLink, links)))
-    if all or not outfeeds:
-        _debuglog('no A tags, guessing')
-        suffixes = [ # filenames used by popular software:
-          'atom.xml', # blogger, TypePad
-          'index.atom', # MT, apparently
-          'index.rdf', # MT
-          'rss.xml', # Dave Winer/Manila
-          'index.xml', # MT
-          'index.rss' # Slash
-        ]
-        outfeeds.extend(filter(isFeed, [urlparse.urljoin(fulluri, x) for x in suffixes]))
-    if (all or not outfeeds) and querySyndic8:
-        # still no luck, search Syndic8 for feeds (requires xmlrpclib)
-        _debuglog('still no luck, searching Syndic8')
-        outfeeds.extend(getFeedsFromSyndic8(uri))
-    if hasattr(__builtins__, 'set') or __builtins__.has_key('set'):
-        outfeeds = list(set(outfeeds))
-    return outfeeds
+        resp = request.urlopen(req)
+        body = resp.read()
 
-##### test harness ######
+        # Use Chardet to determine the encoding.
+        encoding = chardet.detect(body)['encoding']
+        return body.decode(encoding)
 
-def test():
-    uri = 'http://diveintomark.org/tests/client/autodiscovery/html4-001.html'
-    failed = []
-    count = 0
-    while 1:
-        data = _gatekeeper.get(uri)
-        if data.find('Atom autodiscovery test') == -1: break
-        sys.stdout.write('.')
-        sys.stdout.flush()
-        count += 1
-        links = getLinks(data, uri)
-        if not links:
-            print '\n*** FAILED ***', uri, 'could not find link'
-            failed.append(uri)
-        elif len(links) > 1:
-            print '\n*** FAILED ***', uri, 'found too many links'
-            failed.append(uri)
-        else:
-            atomdata = urllib.urlopen(links[0]).read()
-            if atomdata.find('<link rel="alternate"') == -1:
-                print '\n*** FAILED ***', uri, 'retrieved something that is not a feed'
-                failed.append(uri)
-            else:
-                backlink = atomdata.split('href="').pop().split('"')[0]
-                if backlink != uri:
-                    print '\n*** FAILED ***', uri, 'retrieved wrong feed'
-                    failed.append(uri)
-        if data.find('<link rel="next" href="') == -1: break
-        uri = urlparse.urljoin(uri, data.split('<link rel="next" href="').pop().split('"')[0])
-    print
-    print count, 'tests executed,', len(failed), 'failed'
-        
-if __name__ == '__main__':
-    args = sys.argv[1:]
-    if args and args[0] == '--debug':
-        _debug = 1
-        args.pop(0)
-    if args:
-        uri = args[0]
-    else:
-        uri = 'http://diveintomark.org/'
-    if uri == 'test':
-        test()
-    else:
-        print "\n".join(getFeeds(uri))
+    except request.HTTPError as e:
+        print(('HTTP Error:', e.code, url))
+        return ''
+    except request.URLError as e:
+        print(('URL Error:', e.reason, url))
+        return ''
+    except ConnectionResetError as e:
+        print(('Connection Error:', e.reason, url))
+        return ''

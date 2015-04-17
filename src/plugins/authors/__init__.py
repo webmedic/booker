@@ -17,7 +17,7 @@ class Catalog(ShelfView):
         """Get all books from the DB and show them"""
 
         if not self.widget:
-            print "Call setWidget first"
+            print("Call setWidget first")
             return
         self.operate = self.showList
         self.items = {}
@@ -68,7 +68,7 @@ class Catalog(ShelfView):
         """Get all books from the DB and show them"""
         
         if not self.widget:
-            print "Call setWidget first"
+            print("Call setWidget first")
             return
         self.operate = self.showGrid
         self.items = {}
@@ -128,7 +128,7 @@ class Catalog(ShelfView):
                 item = QtGui.QListWidgetItem(icon, b.title, shelf)
                 item.book = b
                 self.items[b.id] = item
-        print self.items
+        print((self.items))
 
         self.shelvesLayout.addStretch(1)
         self.widget.shelfStack.setWidget(self.shelves)

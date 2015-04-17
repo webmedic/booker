@@ -17,7 +17,7 @@ def pager():
 
 ${ if prevPage or nextPage: }$
 <div style="text-align: right; width:90%; margin-left: 5%; margin-bottom: 8px;">
-${print pager()}$
+${print(pager())}$
 </div>
 ${:endif}$
 
@@ -84,6 +84,6 @@ ${:end-for}$
 
 ${ if prevPage or nextPage: }$
 <div style="text-align: right; width:90%; margin-left: 5%; margin-bottom: 8px;">
-${print pager()}$
+${print(pager())}$
 </div>
 ${:endif}$

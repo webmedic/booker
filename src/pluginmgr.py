@@ -19,7 +19,7 @@ class Guesser(object):
     configurable = False
 
     def __init__(self):
-        print "INIT: ", self.name
+        print(("INIT: ", self.name))
 
     def can_guess(self, book):
         """Given a book object, it will return True if it
@@ -65,7 +65,7 @@ class ShelfView(QtCore.QObject):
     configurable = False
 
     def __init__(self):
-        print "INIT: ", self.title
+        print(("INIT: ", self.title))
         self.widget = None
         QtCore.QObject.__init__(self)
 
@@ -101,7 +101,7 @@ class ShelfView(QtCore.QObject):
     @QtCore.pyqtSlot()
     def doSearch(self, *args):
         """Perform a search and display the results"""
-        self.operate(search=unicode(self.widget.searchWidget.text.text()))
+        self.operate(search=str(self.widget.searchWidget.text.text()))
 
     def shelfContextMenu(self, point):
         """Show context menu for the book where the user
@@ -132,7 +132,7 @@ class BookStore(QtCore.QObject):
     setStatusMessage = QtCore.pyqtSignal("PyQt_PyObject")
 
     def __init__(self):
-        print "INIT:", self.title
+        print(("INIT:", self.title))
         self.widget = None
         super(QtCore.QObject, self).__init__(None)
 
@@ -147,7 +147,7 @@ class BookStore(QtCore.QObject):
     @QtCore.pyqtSlot()
     def doSearch(self, *args):
         """Slot that triggers search on this store"""
-        self.search(unicode(self.widget.searchWidget.text.text()))
+        self.search(str(self.widget.searchWidget.text.text()))
 
     def search(self, key):
         """Search the store contents for this key, and display the results"""
@@ -167,9 +167,9 @@ def isPluginEnabled(name):
     enabled_plugins = set(config.getValue("general",
                                           "enabledPlugins",
                                           [None]))
-    print "EP:", enabled_plugins
+    print(("EP:", enabled_plugins))
     if enabled_plugins == set([None]):
-        print "FLAG"
+        print("FLAG")
         #Never configured... enable everything! (will change later ;-)
         enabled_plugins = set()
         for c in manager.getCategories():

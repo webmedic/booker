@@ -1,6 +1,6 @@
 from feedparser import parse
 from PyQt4 import QtGui, QtCore, QtWebKit, uic
-import sys, os, urllib
+import sys, os, urllib.request, urllib.parse, urllib.error
 from models import *
 from pprint import pprint
 from math import ceil
@@ -8,7 +8,12 @@ from pluginmgr import BookStore
 import codecs
 import time
 from templite import Templite
-import urlparse
+import urllib.parse
+
+try:
+    from PyQt4.QtCore import QString
+except ImportError:
+    QString = str
 
 # This gets the main catalog from ManyBooks.net.
 
@@ -51,7 +56,7 @@ class Catalog(BookStore):
     itemText = "ManyBooks.net"
     
     def __init__(self):
-        print "INIT: ManyBooks.net"
+        print("INIT: ManyBooks.net")
         BookStore.__init__(self)
         self.widget = None
         self.w = None
@@ -70,7 +75,7 @@ class Catalog(BookStore):
     def operate(self):
         "Show the store"
         if not self.widget:
-            print "Call setWidget first"
+            print("Call setWidget first")
             return
         self.widget.title.setText(self.title)
         if not self.w:
@@ -95,23 +100,23 @@ class Catalog(BookStore):
     showList = operate
 
     def addJSObject(self):
-        print "DEBUG: JS Window Object Cleared"
+        print("DEBUG: JS Window Object Cleared")
         self.w.store_web.page().mainFrame().addToJavaScriptWindowObject(QtCore.QString('catalog'), self)
         
     def search (self, terms):
-        url = "http://manybooks.net/opds/search.php?"+urllib.urlencode(dict(q=terms))
+        url = "http://manybooks.net/opds/search.php?"+urllib.parse.urlencode(dict(q=terms))
         self.crumbs=[self.crumbs[0],["Search: %s"%terms, url]]
         self.openUrl(QtCore.QUrl(url))
 
-    @QtCore.pyqtSlot(QtCore.QString)
+    @QtCore.pyqtSlot(QString)
     @QtCore.pyqtSlot(QtCore.QUrl)    
     def openUrl(self, url):
-        print "openURL:", url
+        print(("openURL:", url))
         if isinstance(url, QtCore.QUrl):
             url = url.toString()
-        url = unicode(url)
+        url = str(url)
         if not url.startswith('http'):
-            url=urlparse.urljoin('http://manybooks.net/opds/',url)        
+            url=urllib.parse.urljoin('http://manybooks.net/opds/',url)        
         extension = url.split('.')[-1]
         if extension in EBOOK_EXTENSIONS:
             # It's a book, get metadata, file and download
@@ -121,7 +126,7 @@ class Catalog(BookStore):
             _author = cache['author']
             book_id = cache['id']
             cover_url = cache['cover'][0]
-            self.setStatusMessage.emit(u"Downloading: "+title)
+            self.setStatusMessage.emit("Downloading: "+title)
             book = Book.get_by(title = title)
             book_tid = url.split('/')[-2]
             if not book:
@@ -156,11 +161,11 @@ class Catalog(BookStore):
     def showBranch(self, url):
         """Trigger download of the branch, then trigger
         parseBranch when it's downloaded"""
-        print "Showing:", url
+        print(("Showing:", url))
         # Disable updates to prevent flickering
         self.w.store_web.setUpdatesEnabled(False)
         self.w.store_web.page().mainFrame().load(QtCore.QUrl(url))
-        self.setStatusMessage.emit(u"Loading: "+url)
+        self.setStatusMessage.emit("Loading: "+url)
         self.w.store_web.page().loadFinished.connect(self.parseBranch)
         return
 
@@ -175,7 +180,7 @@ class Catalog(BookStore):
                 ext = '.jar'
             else:
                 ext = fmt.split(':')[2]
-            links.append(u'http://manybooks.net/send/%s/%s/%s%s' % \
+            links.append('http://manybooks.net/send/%s/%s/%s%s' % \
                          (fmt, book_tid, book_tid, ext))
         return links
         
@@ -185,18 +190,18 @@ class Catalog(BookStore):
         an Atom feed from ManyBooks) with the generated HTML.        
         """
         self.w.store_web.page().loadFinished.disconnect(self.parseBranch)
-        url = unicode(self.w.store_web.page().mainFrame().requestedUrl().toString())
-        print "Parsing the branch:", url
+        url = str(self.w.store_web.page().mainFrame().requestedUrl().toString())
+        print(("Parsing the branch:", url))
         t1 = time.time()
-        data = parse(unicode(self.w.store_web.page().mainFrame().toHtml()).encode('utf-8'))
+        data = parse(str(self.w.store_web.page().mainFrame().toHtml()).encode('utf-8'))
         if not data.entries:
             QtGui.QMessageBox.critical(None, \
-                                      u'Failed to load ManyBooks.net', \
-                                      u'An error ocurred and the ManyBooks.net catalog could not be loaded.')
+                                      'Failed to load ManyBooks.net', \
+                                      'An error ocurred and the ManyBooks.net catalog could not be loaded.')
         nextPage = ''
         prevPage = ''
         for l in data.feed.get('links',[]):
-            print "LINK:", l
+            print(("LINK:", l))
             if l.rel == 'next':
                 nextPage = '<a href="%s">Next Page</a>'%l.href
             elif l.rel == 'prev':
@@ -229,7 +234,7 @@ class Catalog(BookStore):
             acq_links = [l.href for l in entry.get('links',[]) if l.rel=='http://opds-spec.org/acquisition']
 
             if acq_links:
-                cover_url = [l.href for l in entry.links if l.rel==u'http://opds-spec.org/cover']
+                cover_url = [l.href for l in entry.links if l.rel=='http://opds-spec.org/cover']
                 if cover_url:
                     entry.cover_url = cover_url[0]
                 if len(acq_links) == 1:
@@ -257,7 +262,7 @@ class Catalog(BookStore):
             nextPage = nextPage,
             prevPage = prevPage
             )
-        print "Rendered in: %s seconds"%(time.time()-t1)
+        print(("Rendered in: %s seconds"%(time.time()-t1)))
         # open('x.html','w+').write(html)        
         self.w.store_web.setHtml(html)
         self.w.store_web.setUpdatesEnabled(True)

@@ -1,19 +1,25 @@
 from feedparser import parse
 from PyQt4 import QtGui, QtCore, QtWebKit, uic
-import sys, os, urllib
+import sys, os, urllib.request, urllib.parse, urllib.error
 from models import *
 from pprint import pprint
 from math import ceil
 from pluginmgr import BookStore
 import time
 import codecs
-import urlparse
+import urllib.parse
 from templite import Templite
 
 try:
-    from elementtree.ElementTree import XML
+  from lxml.etree import XML
+  print("running with lxml.etree")
 except:
-    from xml.etree.ElementTree import XML
+  print("unable to load lxml.etree")
+
+#try:
+#    from elementtree.ElementTree import XML
+#except:
+#    from xml.etree.ElementTree import XML
 
 # This gets the main catalog from Archive.org.
 
@@ -42,7 +48,7 @@ class Catalog(BookStore):
     def operate(self):
         "Show the store"
         if not self.widget:
-            print "Call setWidget first"
+            print("Call setWidget first")
             return
         self.widget.title.setText(self.title)
         if not self.w:
@@ -66,24 +72,24 @@ class Catalog(BookStore):
     showList = operate
 
     def search (self, terms):
-        url = "http://bookserver.archive.org/catalog/opensearch?"+urllib.urlencode(dict(q=terms))
+        url = "http://bookserver.archive.org/catalog/opensearch?"+urllib.parse.urlencode(dict(q=terms))
         self.crumbs=[self.crumbs[0],["Search: %s"%terms, url]]
         self.openUrl(QtCore.QUrl(url))
 
     def openUrl(self, url):
-        print "CRUMBS:", self.crumbs
+        print(("CRUMBS:", self.crumbs))
         if isinstance(url, QtCore.QUrl):
             url = url.toString()
-        url = unicode(url)
-        print "URL:", url
+        url = str(url)
+        print(("URL:", url))
         if not url.startswith('http'):
-            url=urlparse.urljoin('http://bookserver.archive.org/catalog/',url)
+            url=urllib.parse.urljoin('http://bookserver.archive.org/catalog/',url)
         extension = url.split('.')[-1]
-        print "Opening:",url
+        print(("Opening:",url))
         if extension in EBOOK_EXTENSIONS:
             # It's a book, get metadata, file and download
             meta_url = url[:-len(extension)-1]+'_meta.xml'
-            data = urllib.urlopen(meta_url).read()
+            data = urllib.request.urlopen(meta_url).read()
             root_elem = XML(data)
             title = root_elem.find('title').text
             authors = root_elem.findall('creator')
@@ -93,7 +99,7 @@ class Catalog(BookStore):
                 tags = tags.text.split(';')
             else:
                 tags = []
-            self.setStatusMessage.emit(u"Downloading: "+title)
+            self.setStatusMessage.emit("Downloading: "+title)
             book = Book.get_by(title = title)
             if not book:
                 _tags = []
@@ -142,11 +148,11 @@ class Catalog(BookStore):
     def showBranch(self, url):
         """Trigger download of the branch, then trigger
         parseBranch when it's downloaded"""
-        print "Showing:", url
+        print(("Showing:", url))
         # Disable updates to prevent flickering
         self.w.store_web.setUpdatesEnabled(False)
         self.w.store_web.page().mainFrame().load(QtCore.QUrl(url))
-        self.setStatusMessage.emit(u"Loading: "+url)
+        self.setStatusMessage.emit("Loading: "+url)
         self.w.store_web.page().loadFinished.connect(self.parseBranch)
         return
        
@@ -156,10 +162,10 @@ class Catalog(BookStore):
         an Atom feed from Archive.org) with the generated HTML.        
         """
         self.w.store_web.page().loadFinished.disconnect(self.parseBranch)
-        url = unicode(self.w.store_web.page().mainFrame().requestedUrl().toString())
-        print "Parsing the branch:", url
+        url = str(self.w.store_web.page().mainFrame().requestedUrl().toString())
+        print(("Parsing the branch:", url))
         t1 = time.time()
-        data = parse(unicode(self.w.store_web.page().mainFrame().toHtml()).encode('utf-8'))
+        data = parse(str(self.w.store_web.page().mainFrame().toHtml()).encode('utf-8'))
 
         title = data.feed.get('title',data.feed.get('subtitle','###'))
         
@@ -183,17 +189,17 @@ class Catalog(BookStore):
         links = []
         for entry in data.entries:
             # iurl = entry.links[0].href
-            if entry.links[0].type == u'application/atom+xml':
+            if entry.links[0].type == 'application/atom+xml':
                 # A category
                 links.append(entry)
             else: # A book
                 books.append(entry)
-                print entry
+                print(entry)
 
         nextPage = ''
         prevPage = ''
         for l in data.feed.get('links',[]):
-            print "LINK:", l
+            print(("LINK:", l))
             if l.rel == 'next':
                 nextPage = '<a href="%s">Next Page</a>'%l.href
             elif l.rel == 'prev':
@@ -208,7 +214,7 @@ class Catalog(BookStore):
             nextPage = nextPage,
             prevPage = prevPage
             )
-        print "Rendered in: %s seconds"%(time.time()-t1)
+        print(("Rendered in: %s seconds"%(time.time()-t1)))
         # open('x.html','w+').write(html)        
         self.w.store_web.setHtml(html)
         self.w.store_web.setUpdatesEnabled(True)

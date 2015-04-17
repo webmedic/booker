@@ -110,20 +110,20 @@ class NetworkSettings(QtGui.QDialog):
 
     def _check_form(self):
         if self.proxy.isChecked():
-            host = unicode(self.host.text())
+            host = str(self.host.text())
             if host == '':
-                self._show_error(u'You need to set a proxy host')
+                self._show_error('You need to set a proxy host')
                 self.host.setFocus()
                 return False
             if self.auth.isChecked():
-                user = unicode(self.username.text())
-                passwd = unicode(self.password.text())
+                user = str(self.username.text())
+                passwd = str(self.password.text())
                 if user == '':
-                    self._show_error(u'You need to set a username to enable proxy authentication')
+                    self._show_error('You need to set a username to enable proxy authentication')
                     self.username.setFocus()
                     return False
                 if passwd == '':
-                    self._show_error(u'You need to set a password to enable proxy authentication')
+                    self._show_error('You need to set a password to enable proxy authentication')
                     self.password.setFocus()
                     return False
         return True
@@ -135,11 +135,11 @@ class NetworkSettings(QtGui.QDialog):
             if not self._check_form():
                 return False
             data = { \
-                'host': unicode(self.host.text()), \
+                'host': str(self.host.text()), \
                 'port': int(self.port.value())
             }
             if self.auth.isChecked():
-                data['username'] = unicode(self.username.text())
-                data['password'] = unicode(self.password.text())
+                data['username'] = str(self.username.text())
+                data['password'] = str(self.password.text())
         save_config(data)
         self.done(0)

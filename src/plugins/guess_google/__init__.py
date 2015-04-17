@@ -1,4 +1,4 @@
-import os, sys, urllib2
+import os, sys, urllib.request, urllib.error, urllib.parse
 import datetime
 import gdata.books.service
 from metadata import BookMetadata

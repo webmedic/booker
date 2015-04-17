@@ -9,9 +9,9 @@ More information about the API:
 http://developer.alibris.com/docs
 """
 import datetime
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import json
-from urllib import urlencode
+from urllib.parse import urlencode
 from pluginmgr import Guesser
 from metadata import BookMetadata
 
@@ -55,7 +55,7 @@ class AlibrisGuesser(Guesser):
            JSON Response example:
            http://developer.alibris.com/files/json-freakonomics.txt.
         """
-        data = urllib2.urlopen(self._get_url(query)).read()
+        data = urllib.request.urlopen(self._get_url(query)).read()
         return json.loads(data)
 
     def guess(self, query):

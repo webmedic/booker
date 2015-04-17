@@ -22,7 +22,7 @@ class FolderDevice(object):
 
     def sync(self):
         """Perform the sync"""
-        print "syncing tags:", self.tags, "to folder", self.folder
+        print(("syncing tags:", self.tags, "to folder", self.folder))
         files_to_sync = []
         book_set = set()
         for t in self.tags:
@@ -47,7 +47,7 @@ class FolderDevice(object):
             _, ext = os.path.splitext(fn[0])
             new_name = slugify(b.title)+ext
             dest = os.path.join(self.folder, new_name)
-            print fn[0],'=>', dest
+            print((fn[0],'=>', dest))
             shutil.copyfile(fn[0],dest)
 
 class NewDeviceDialog(QtGui.QDialog):
@@ -97,7 +97,7 @@ class FolderDevicePlugin(Device, QtCore.QObject):
                     "name": d.name,
                     "folder": d.folder
                 } for d in self.devices])
-        print data
+        print(data)
         f.write(data)
         f.close()
 
@@ -120,12 +120,12 @@ class FolderDevicePlugin(Device, QtCore.QObject):
             if r == self.w.Rejected:
                 return
             # Accepted, create new device
-            tags = [unicode(i.text()) for i in self.w.tags.selectedItems()]
-            print tags
-            formats = [unicode(i.text()) for i in self.w.formats.selectedItems()]
-            print formats
-            path = unicode(self.w.path.text())
-            name = unicode(self.w.name.text())
+            tags = [str(i.text()) for i in self.w.tags.selectedItems()]
+            print(tags)
+            formats = [str(i.text()) for i in self.w.formats.selectedItems()]
+            print(formats)
+            path = str(self.w.path.text())
+            name = str(self.w.name.text())
 
             # Validate
             if not path or not name or not tags:

@@ -18,7 +18,7 @@ class WebView(QtWebKit.QWebView):
     to create a new window (popups)"""
 
     def createWindow(self, webwindowtype):
-        print "New WebWindow created."
+        print("New WebWindow created.")
         self.pop = WebView()
         self.pop.show()
         return self.pop
@@ -58,7 +58,7 @@ class AboutBook(QtGui.QWidget):
         self.book = models.Book.get_by(id=book_id)
         if not self.book:
             # Called with invalid book ID
-            print "Wrong book ID"
+            print("Wrong book ID")
 
         tplfile = codecs.open(os.path.join(os.path.dirname(__file__),
                                            'templates',
@@ -77,7 +77,7 @@ class AboutBook(QtGui.QWidget):
             thumb=QtCore.QUrl.fromLocalFile(self.book.cover()).toString(),
             quotes=['Sample Quote #1', 'Sample Quote #2'],
             )
-        print "Rendered in: %s seconds" % (time.time() - t1)
+        print(("Rendered in: %s seconds" % (time.time() - t1)))
         self.about_web_view.page().mainFrame().setHtml(html)
 
 

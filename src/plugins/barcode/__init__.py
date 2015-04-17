@@ -31,9 +31,9 @@ class Plugin(Tool):
         # p = "DEMO:0345400445"
         guesser = manager.getPluginsOfCategory('Guesser')[0]
         for code in p.splitlines():
-            print "scanning"
+            print("scanning")
             if code:
-                print 'Got barcode:', code
+                print(('Got barcode:', code))
                 isbn = code.split(':')[1]
                 # QtGui.QDesktopServices.openUrl(QtCore.QUrl('http://www.goodreads.com/search/search?q=%s'%isbn))
                 i = Identifier(key='ISBN', value=isbn)
@@ -59,7 +59,7 @@ class Plugin(Tool):
                         return
                     else:
                         # A candidate was chosen, update data
-                        print md
+                        print(md)
                         b.title = md.title
                         if md.identifiers is not None:
                             for k,v in md.identifiers:
@@ -71,7 +71,7 @@ class Plugin(Tool):
                         for a in md.authors:
                             author = Author.get_by(name = a)
                             if not author:
-                                print "Creating author:", a
+                                print(("Creating author:", a))
                                 author = Author(name = a)
                             b.authors.append(author)
                         Author.sanitize()

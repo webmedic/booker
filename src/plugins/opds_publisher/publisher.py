@@ -31,7 +31,7 @@ def real_publish():
             pdf_fn = None
             mobi_fn = None
             exts = book.available_formats()
-            print "EXTS:", exts
+            print(("EXTS:", exts))
             if '.epub' in exts:
                 epub_fn = "/book/%s.epub"%book.id
             if '.mobi' in exts:
@@ -42,7 +42,7 @@ def real_publish():
             books.append([
                 book.title,
                 book.id,
-                u','.join([a.name for a in book.authors]),
+                ','.join([a.name for a in book.authors]),
                 book.comments,
                 epub_fn,
                 pdf_fn,
@@ -87,13 +87,13 @@ def real_publish():
     def get_address ():
         """Returns a host:port tuple available for binding"""
         _host, _port = get_bind_address()
-        for n in xrange(1,1024):
+        for n in range(1,1024):
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             try:
                 sock.bind((_host, _port))
                 sock.close()
                 break
-            except socket.error, e:
+            except socket.error as e:
                 sock.close()
                 code, string = e
                 if code == errno.EADDRINUSE:
@@ -114,7 +114,7 @@ def real_publish():
         except Exception:
             return
         url = "http://%s:%d"%(_host, _port)
-        print "Appending URL to queue: %s"%url
+        print(("Appending URL to queue: %s"%url))
         queue.put({'url': url})
         run(host=_host, port=_port, quiet=True)
     start()

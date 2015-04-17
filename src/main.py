@@ -34,11 +34,11 @@ class DeleteBook (QtGui.QDialog):
         uifile = ui.path('delete_book.ui')
         uic.loadUi(uifile, self)
         self.ui = self
-        self.setWindowTitle(u'Confirm book delete')
-        self.label.setText(u'Are you sure you want to delete the book "%s"?' %
+        self.setWindowTitle('Confirm book delete')
+        self.label.setText('Are you sure you want to delete the book "%s"?' %
                             title)
         self.label.setWordWrap(True)
-        self.checkBox.setText(u'Delete book files')
+        self.checkBox.setText('Delete book files')
         self.checkBox.setChecked(True)
         self.setModal(True)
 
@@ -98,12 +98,12 @@ class Main(QtGui.QMainWindow):
                                             self.about_book_openLink)
         self._layout2.addWidget(self.about_book)
 
-        print "Finished initializing main window"
+        print("Finished initializing main window")
 
         self.loadPlugins()
         geom = config.getValue("general", "geometry", None)
         if geom is not None:
-            self.restoreGeometry(geom.decode('base64'))
+            self.restoreGeometry(geom)
 
         downloader.downloader = downloader.Downloads()
         downloader.downloader.setStatusMessage.connect(self.setStatusMessage)
@@ -178,9 +178,9 @@ class Main(QtGui.QMainWindow):
             if plugin.name not in enabled_plugins:
                 continue
             dev_menu = QtGui.QMenu(plugin.plugin_object.name, self)
-            print "Adding menu:", plugin.plugin_object.name
+            print(("Adding menu:", plugin.plugin_object.name))
             for a in plugin.plugin_object.deviceActions():
-                print a
+                print(a)
                 dev_menu.addAction(a)
             dev_menu.addSeparator()
             dev_menu.addAction(plugin.plugin_object.actionNew())
@@ -263,8 +263,8 @@ class Main(QtGui.QMainWindow):
             viewer = CbzViewer(fname)
         except ValueError:
             QtGui.QMessageBox.critical(self,
-                                      u'Failed to open CBZ file',
-                                      u'The document you are trying to open '
+                                      'Failed to open CBZ file',
+                                      'The document you are trying to open '
                                        'is not a valid CBZ file.')
             return
         self.viewers.append(viewer)
@@ -275,8 +275,8 @@ class Main(QtGui.QMainWindow):
             viewer = EpubViewer(fname)
         except ValueError:
             QtGui.QMessageBox.critical(self,
-                                      u'Failed to open ePub file',
-                                      u'The document you are trying to open '
+                                      'Failed to open ePub file',
+                                      'The document you are trying to open '
                                        'is not a valid ePub file.')
             return
         self.viewers.append(viewer)
@@ -284,8 +284,8 @@ class Main(QtGui.QMainWindow):
 
     def show_invalid_file(self, filename):
         QtGui.QMessageBox.critical(self,
-                                  u'Invalid file',
-                                  u'The file "%s" is empty or has an '
+                                  'Invalid file',
+                                  'The file "%s" is empty or has an '
                                    'invalid format.' % filename)
 
     def _check_file(self, filename):
@@ -319,12 +319,12 @@ class Main(QtGui.QMainWindow):
         menu.addAction(self.actionDelete_Book)
 
         # Create menu with files for this book
-        open_menu = QtGui.QMenu(u'Open book')
+        open_menu = QtGui.QMenu('Open book')
         formats = book.available_formats(True)
         if len(formats) == 1:
             # A single file
             f = book.files[0]
-            title = u'Open book'
+            title = 'Open book'
             if not self._check_file(f.file_name):
                 filename = os.path.basename(f.file_name)
                 action = menu.addAction(title,
@@ -346,7 +346,7 @@ class Main(QtGui.QMainWindow):
                 action = None
                 filename = os.path.basename(f.file_name)
                 _, ext = os.path.splitext(filename)
-                title = u'In %s' % ext[1:].title() if formats.count(ext) == 1 \
+                title = 'In %s' % ext[1:].title() if formats.count(ext) == 1 \
                                     else self._shorten_filename(filename, ext)
                 if not self._check_file(f.file_name):
                     action = open_menu.addAction(title,
@@ -392,7 +392,7 @@ class Main(QtGui.QMainWindow):
         if self.currentBook.files:
             url = QtCore.QUrl.fromLocalFile(
                                         self.currentBook.files[0].file_name)
-            print "Opening:", url
+            print(("Opening:", url))
             QtGui.QDesktopServices.openUrl(url)
 
     @QtCore.pyqtSlot()
@@ -400,7 +400,7 @@ class Main(QtGui.QMainWindow):
         if not self.currentBook:
             return
         self.book_editor.load_data(self.currentBook.id)
-        self.title.setText(u'Editing properties of "%s"' %
+        self.title.setText('Editing properties of "%s"' %
                             self.currentBook.title)
         self.stack.setCurrentIndex(1)
 
@@ -409,7 +409,7 @@ class Main(QtGui.QMainWindow):
         if not self.currentBook:
             return
         self.about_book.load_data(self.currentBook.id)
-        self.title.setText(u'Properties of "%s"' % self.currentBook.title)
+        self.title.setText('Properties of "%s"' % self.currentBook.title)
         self.stack.setCurrentIndex(4)
 
     @QtCore.pyqtSlot()
@@ -420,7 +420,7 @@ class Main(QtGui.QMainWindow):
         rsp = dlg.exec_()
         if rsp == dlg.Accepted:
             # Delete the book files
-            print "Deleting book: %s" % self.currentBook.title
+            print(("Deleting book: %s" % self.currentBook.title))
             self.currentBook.delete(dlg.checkBox.isChecked())
             models.session.commit()
             self.currentBook = None
@@ -429,19 +429,19 @@ class Main(QtGui.QMainWindow):
     def on_books_itemActivated(self, item):
         self.currentBook = item.book
         self.about_book.load_data(item.book.id)
-        self.title.setText(u'Properties of "%s"' % item.book.title)
+        self.title.setText('Properties of "%s"' % item.book.title)
         self.stack.setCurrentIndex(4)
 
     def about_book_openLink(self, url):
-        filename = unicode(url.toString().remove(u"open:").remove(u"del:"))
-        if url.toString() == u"del:book":
-            print "Delete book"
+        filename = str(url.toString().replace("open:", "").replace("del:", ""))
+        if url.toString() == "del:book":
+            print("Delete book")
             # We need to merge with integrate branch to make this work!
             # self.on_actionDelete_Book_triggered()
-        elif url.toString().startsWith(u"del:"):
+        elif url.toString().startswith("del:"):
             answer = QtGui.QMessageBox.question(self,
-                    u"Delete File",
-                    u"Are you sure you want to delete the file <b>%s</b>?" %
+                    "Delete File",
+                    "Are you sure you want to delete the file <b>%s</b>?" %
                         filename, QtGui.QMessageBox.No, QtGui.QMessageBox.Yes)
             if answer == QtGui.QMessageBox.Yes:
                 f = models.File.get_by(file_name=filename)
@@ -449,10 +449,10 @@ class Main(QtGui.QMainWindow):
                     f.delete()
                     models.session.commit()
                     self.actionAbout_Book.trigger()
-        if url.toString().startsWith(u"open:"):
-            if url.toString().toLower().endsWith(u".epub"):
+        if url.toString().startswith("open:"):
+            if url.toString().lower().endswith(".epub"):
                 self.openEpub(filename)
-            elif url.toString().toLower().endsWith(u".cbz"):
+            elif url.toString().lower().endswith(".cbz"):
                 self.openEpub(filename)
             else:
                 QtGui.QDesktopServices.openUrl(QtCore.QUrl(filename))

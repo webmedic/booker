@@ -20,5 +20,5 @@ if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
 
     # Do something slow
-    for x in progress(xrange(50), "Show Progress", "Stop the madness!"):
+    for x in progress(list(range(50)), "Show Progress", "Stop the madness!"):
         time.sleep(.2)

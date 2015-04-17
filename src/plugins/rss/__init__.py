@@ -2,10 +2,10 @@ from pluginmgr import BookStore, Tool
 from PyQt4 import QtCore, QtGui, uic
 import config
 import os
-from feedfinder import feeds as findFeed
+from .feedfinder import feeds as findFeed
 import feedparser
 import models
-from rss2epub import RSS2ePub
+from .rss2epub import RSS2ePub
 import tempfile
 
 class RSSWidget(QtGui.QWidget):
@@ -36,12 +36,12 @@ class RSSWidget(QtGui.QWidget):
         t, ok = QtGui.QInputDialog.getText(self, "Aranduka - Add Feed", "Enter the URL of the feed or site:")
         if not ok:
             return
-        t = unicode(t)
-        print t
+        t = str(t)
+        print(t)
         # FIXME: make unblocking
         # FIXME: make the user choose a feed
-        feeds = findFeed(unicode(t))
-        print feeds
+        feeds = findFeed(str(t))
+        print(feeds)
         feed = feeds[0]
         data = feedparser.parse(feed)
         self.feeds.append([data.feed.title, feed])
@@ -77,7 +77,7 @@ class RSSWidget(QtGui.QWidget):
     @QtCore.pyqtSlot()
     def on_save_clicked(self):
         i = self.feedList.currentRow()
-        self.feeds[i] = [unicode(self.title.text()), unicode(self.url.text())]
+        self.feeds[i] = [str(self.title.text()), str(self.url.text())]
         self.saveFeeds()
         self.loadFeeds()
         self.splitter.setSizes([1,0])
@@ -99,7 +99,7 @@ class RSSStore(BookStore):
     itemText = "RSS Feeds"
 
     def __init__(self):
-        print "INIT:", self.title
+        print(("INIT:", self.title))
         self.widget = None
         self.w = None
         BookStore.__init__(self)
@@ -115,7 +115,7 @@ class RSSStore(BookStore):
     def operate(self):
         "Show the store"
         if not self.widget:
-            print "Call setWidget first"
+            print("Call setWidget first")
             return
         self.widget.title.setText(self.title)
         if not self.w:

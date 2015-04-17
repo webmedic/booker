@@ -2,7 +2,7 @@
 "convert" the book to other formats by downloading them"""
 
 from pluginmgr import Converter
-import sys, os, urllib
+import sys, os, urllib.request, urllib.parse, urllib.error
 from models import File, session
 
 SUPPORTED = ['epub','pdf','mobi']
@@ -19,7 +19,7 @@ class FBConverter(Converter):
     name = "FeedBooks"
 
     def __init__(self):
-        print "INIT: feedbooks_converter"
+        print("INIT: feedbooks_converter")
 
     def can_convert(self, book):
         """Given a book object, return the list of formats to

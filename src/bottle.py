@@ -59,7 +59,7 @@ This is an example::
     run(host='localhost', port=8080)
 """
 
-from __future__ import with_statement
+
 
 __author__ = 'Marcel Hellkamp'
 __version__ = '0.8.3'
@@ -77,17 +77,17 @@ import os
 import re
 import subprocess
 import sys
-import thread
+import _thread
 import threading
 import time
 import tokenize
 import tempfile
 
-from Cookie import SimpleCookie
+from http.cookies import SimpleCookie
 from tempfile import TemporaryFile
 from traceback import format_exc
-from urllib import quote as urlquote
-from urlparse import urlunsplit, urljoin
+from urllib.parse import quote as urlquote
+from urllib.parse import urlunsplit, urljoin
 
 try:
     from collections import MutableMapping as DictMixin
@@ -95,12 +95,12 @@ except ImportError: # pragma: no cover
     from UserDict import DictMixin
 
 try:
-    from urlparse import parse_qs
+    from urllib.parse import parse_qs
 except ImportError: # pragma: no cover
     from cgi import parse_qs
 
 try:
-    import cPickle as pickle
+    import pickle as pickle
 except ImportError: # pragma: no cover
     import pickle
 
@@ -124,14 +124,14 @@ if sys.version_info >= (3,0,0): # pragma: no cover
     def touni(x, enc='utf8'): # Convert anything to unicode (py3)
         return str(x, encoding=enc) if isinstance(x, bytes) else str(x)
 else:
-    from StringIO import StringIO as BytesIO
+    from io import StringIO as BytesIO
     from types import StringType
     NCTextIOWrapper = None
     def touni(x, enc='utf8'): # Convert anything to unicode (py2)
-        return x if isinstance(x, unicode) else unicode(str(x), encoding=enc)
+        return x if isinstance(x, str) else str(str(x), encoding=enc)
 
 def tob(data, enc='utf8'): # Convert strings to bytes (py2 and py3)
-    return data.encode(enc) if isinstance(data, unicode) else data
+    return data.encode(enc) if isinstance(data, str) else data
 
 # Background compatibility
 import warnings
@@ -349,9 +349,9 @@ class Router(object):
                 combined = '%s|(^%s$)' % (self.dynamic[-1][0].pattern, fpatt)
                 self.dynamic[-1] = (re.compile(combined), self.dynamic[-1][1])
                 self.dynamic[-1][1].append((route.target, gregexp))
-            except (AssertionError, IndexError), e: # AssertionError: Too many groups
+            except (AssertionError, IndexError) as e: # AssertionError: Too many groups
                 self.dynamic.append((re.compile('(^%s$)'%fpatt),[(route.target, gregexp)]))
-            except re.error, e:
+            except re.error as e:
                 raise RouteSyntaxError("Could not add Route: %s (%s)" % (route, e))
 
     def __eq__(self, other):
@@ -387,7 +387,7 @@ class Bottle(object):
         ''' Mount a Bottle application to a specific URL prefix '''
         if not isinstance(app, Bottle):
             raise TypeError('Only Bottle instances are supported for now.')
-        script_path = '/'.join(filter(None, script_path.split('/')))
+        script_path = '/'.join([_f for _f in script_path.split('/') if _f])
         path_depth = script_path.count('/') + 1
         if not script_path:
             raise TypeError('Empty script_path. Perhaps you want a merge()?')
@@ -497,9 +497,9 @@ class Bottle(object):
         try:
             handler, args = self.match_url(url, method)
             return handler(**args)
-        except HTTPResponse, e:
+        except HTTPResponse as e:
             return e
-        except Exception, e:
+        except Exception as e:
             if isinstance(e, (KeyboardInterrupt, SystemExit, MemoryError))\
             or not self.catchall:
                 raise
@@ -522,10 +522,10 @@ class Bottle(object):
             return []
         # Join lists of byte or unicode strings. Mixed lists are NOT supported
         if isinstance(out, (tuple, list))\
-        and isinstance(out[0], (StringType, unicode)):
+        and isinstance(out[0], (StringType, str)):
             out = out[0][0:0].join(out) # b'abc'[0:0] -> b''
         # Encode unicode strings
-        if isinstance(out, unicode):
+        if isinstance(out, str):
             out = out.encode(response.charset)
         # Byte Strings are just returned
         if isinstance(out, StringType):
@@ -549,14 +549,14 @@ class Bottle(object):
         # Handle Iterables. We peek into them to detect their inner type.
         try:
             out = iter(out)
-            first = out.next()
+            first = next(out)
             while not first:
-                first = out.next()
+                first = next(out)
         except StopIteration:
             return self._cast('', request, response)
-        except HTTPResponse, e:
+        except HTTPResponse as e:
             first = e
-        except Exception, e:
+        except Exception as e:
             first = HTTPError(500, 'Unhandled exception', e, format_exc(10))
             if isinstance(e, (KeyboardInterrupt, SystemExit, MemoryError))\
             or not self.catchall:
@@ -566,9 +566,8 @@ class Bottle(object):
             return self._cast(first, request, response)
         if isinstance(first, StringType):
             return itertools.chain([first], out)
-        if isinstance(first, unicode):
-            return itertools.imap(lambda x: x.encode(response.charset),
-                                  itertools.chain([first], out))
+        if isinstance(first, str):
+            return [x.encode(response.charset) for x in itertools.chain([first], out)]
         return self._cast(HTTPError(500, 'Unsupported response type: %s'\
                                          % type(first)), request, response)
 
@@ -588,7 +587,7 @@ class Bottle(object):
             return out
         except (KeyboardInterrupt, SystemExit, MemoryError):
             raise
-        except Exception, e:
+        except Exception as e:
             if not self.catchall:
                 raise
             err = '<h1>Critical error while processing request: %s</h1>' \
@@ -648,7 +647,7 @@ class Request(threading.local, DictMixin):
     def __delitem__(self, key): self[key] = ""; del(self.environ[key])
     def __iter__(self): return iter(self.environ)
     def __len__(self): return len(self.environ)
-    def keys(self): return self.environ.keys()
+    def keys(self): return list(self.environ.keys())
     def __setitem__(self, key, value):
         """ Shortcut for Request.environ.__setitem__ """
         self.environ[key] = value
@@ -702,7 +701,7 @@ class Request(threading.local, DictMixin):
         '''
         if 'bottle.headers' not in self.environ:
             header = self.environ['bottle.headers'] = HeaderDict()
-            for key, value in self.environ.iteritems():
+            for key, value in list(self.environ.items()):
                 if key.startswith('HTTP_'):
                     key = key[5:].replace('_','-').title()
                     header[key] = value
@@ -718,7 +717,7 @@ class Request(threading.local, DictMixin):
         if 'bottle.get' not in self.environ:
             data = parse_qs(self.query_string, keep_blank_values=True)
             get = self.environ['bottle.get'] = MultiDict()
-            for key, values in data.iteritems():
+            for key, values in list(data.items()):
                 for value in values:
                     get[key] = value
         return self.environ['bottle.get']
@@ -817,7 +816,7 @@ class Request(threading.local, DictMixin):
         if 'bottle.cookies' not in self.environ:
             raw_dict = SimpleCookie(self.environ.get('HTTP_COOKIE',''))
             self.environ['bottle.cookies'] = {}
-            for cookie in raw_dict.itervalues():
+            for cookie in list(raw_dict.values()):
                 self.environ['bottle.cookies'][cookie.key] = cookie.value
         return self.environ['bottle.cookies']
 
@@ -865,7 +864,7 @@ class Response(threading.local):
 
     def wsgiheader(self):
         ''' Returns a wsgi conform list of header/value pairs. '''
-        for c in self.COOKIES.values():
+        for c in list(self.COOKIES.values()):
             if c.OutputString() not in self.headers.getall('Set-Cookie'):
                 self.headers.append('Set-Cookie', c.OutputString())
         # rfc2616 section 10.2.3, 10.3.5
@@ -906,12 +905,12 @@ class Response(threading.local):
             expires, path, comment, domain, max_age, secure, version, httponly
             See http://de.wikipedia.org/wiki/HTTP-Cookie#Aufbau for details
         """
-        if not isinstance(value, basestring):
+        if not isinstance(value, str):
             if not secret:
                 raise TypeError('Cookies must be strings when secret is not set')
             value = cookie_encode(value, secret).decode('ascii') #2to3 hack
         self.COOKIES[key] = value
-        for k, v in kargs.iteritems():
+        for k, v in list(kargs.items()):
             self.COOKIES[key][k.replace('_', '-')] = v
 
     def get_content_type(self):
@@ -936,14 +935,14 @@ class MultiDict(DictMixin):
     # collections.MutableMapping would be better for Python >= 2.6
     def __init__(self, *a, **k):
         self.dict = dict()
-        for k, v in dict(*a, **k).iteritems():
+        for k, v in list(dict(*a, **k).items()):
             self[k] = v
 
     def __len__(self): return len(self.dict)
     def __iter__(self): return iter(self.dict)
     def __contains__(self, key): return key in self.dict
     def __delitem__(self, key): del self.dict[key]
-    def keys(self): return self.dict.keys()
+    def keys(self): return list(self.dict.keys())
     def __getitem__(self, key): return self.get(key, KeyError, -1)
     def __setitem__(self, key, value): self.append(key, value)
 
@@ -957,7 +956,7 @@ class MultiDict(DictMixin):
         return self.dict[key][index]
 
     def iterallitems(self):
-        for key, values in self.dict.iteritems():
+        for key, values in list(self.dict.items()):
             for value in values:
                 yield key, value
 
@@ -1111,14 +1110,14 @@ def cookie_encode(data, key):
     ''' Encode and sign a pickle-able object. Return a string '''
     msg = base64.b64encode(pickle.dumps(data, -1))
     sig = base64.b64encode(hmac.new(key, msg).digest())
-    return u'!'.encode('ascii') + sig + u'?'.encode('ascii') + msg #2to3 hack
+    return '!'.encode('ascii') + sig + '?'.encode('ascii') + msg #2to3 hack
 
 
 def cookie_decode(data, key):
     ''' Verify and decode an encoded string. Return an object or None'''
-    if isinstance(data, unicode): data = data.encode('ascii') #2to3 hack
+    if isinstance(data, str): data = data.encode('ascii') #2to3 hack
     if cookie_is_encoded(data):
-        sig, msg = data.split(u'?'.encode('ascii'),1) #2to3 hack
+        sig, msg = data.split('?'.encode('ascii'),1) #2to3 hack
         if sig[1:] == base64.b64encode(hmac.new(key, msg).digest()):
             return pickle.loads(base64.b64decode(msg))
     return None
@@ -1126,14 +1125,14 @@ def cookie_decode(data, key):
 
 def cookie_is_encoded(data):
     ''' Return True if the argument looks like a encoded cookie.'''
-    return bool(data.startswith(u'!'.encode('ascii')) and u'?'.encode('ascii') in data) #2to3 hack
+    return bool(data.startswith('!'.encode('ascii')) and '?'.encode('ascii') in data) #2to3 hack
 
 
 def tonativefunc(enc='utf-8'):
     ''' Returns a function that turns everything into 'native' strings using enc '''
     if sys.version_info >= (3,0,0):
         return lambda x: x.decode(enc) if isinstance(x, bytes) else str(x)
-    return lambda x: x.encode(enc) if isinstance(x, unicode) else str(x)
+    return lambda x: x.encode(enc) if isinstance(x, str) else str(x)
 
 
 def yieldroutes(func):
@@ -1197,7 +1196,7 @@ def validate(**vkargs):
     """
     def decorator(func):
         def wrapper(**kargs):
-            for key, value in vkargs.iteritems():
+            for key, value in list(vkargs.items()):
                 if key not in kargs:
                     abort(403, 'Missing parameter: %s' % key)
                 try:
@@ -1241,7 +1240,7 @@ class ServerAdapter(object):
         pass
         
     def __repr__(self):
-        args = ', '.join(['%s=%s'%(k,repr(v)) for k, v in self.options.items()])
+        args = ', '.join(['%s=%s'%(k,repr(v)) for k, v in list(self.options.items())])
         return "%s(%s)" % (self.__class__.__name__, args)
 
 
@@ -1389,10 +1388,10 @@ def run(app=None, server=WSGIRefServer, host='127.0.0.1', port=8080,
         raise RuntimeError("Server must be a subclass of WSGIAdapter")
     server.quiet = server.quiet or quiet
     if not server.quiet and not os.environ.get('BOTTLE_CHILD'):
-        print "Bottle server starting up (using %s)..." % repr(server)
-        print "Listening on http://%s:%d/" % (server.host, server.port)
-        print "Use Ctrl-C to quit."
-        print
+        print(("Bottle server starting up (using %s)..." % repr(server)))
+        print(("Listening on http://%s:%d/" % (server.host, server.port)))
+        print("Use Ctrl-C to quit.")
+        print()
     try:
         if reloader:
             interval = min(interval, 1)
@@ -1404,7 +1403,7 @@ def run(app=None, server=WSGIRefServer, host='127.0.0.1', port=8080,
             server.run(app)
     except KeyboardInterrupt: pass
     if not server.quiet and not os.environ.get('BOTTLE_CHILD'):
-        print "Shutting down..."
+        print("Shutting down...")
 
 
 class FileCheckerThread(threading.Thread):
@@ -1421,13 +1420,13 @@ class FileCheckerThread(threading.Thread):
         exists = os.path.exists
         mtime = lambda path: os.stat(path).st_mtime
         files = dict()
-        for module in sys.modules.values():
+        for module in list(sys.modules.values()):
             try:
                 path = inspect.getsourcefile(module)
                 if path and exists(path): files[path] = mtime(path)
             except TypeError: pass
         while not self.status:
-            for path, lmtime in files.iteritems():
+            for path, lmtime in list(files.items()):
                 if not exists(path) or mtime(path) > lmtime:
                     self.status = 3
             if not exists(self.lockfile):
@@ -1437,7 +1436,7 @@ class FileCheckerThread(threading.Thread):
             if not self.status:
                 time.sleep(self.interval)
         if self.status != 5:
-            thread.interrupt_main()
+            _thread.interrupt_main()
 
 
 def _reloader_child(server, app, interval):
@@ -1453,7 +1452,7 @@ def _reloader_child(server, app, interval):
     try:
         bgcheck.start()
         server.run(app)
-    except KeyboardInterrupt, e: pass
+    except KeyboardInterrupt as e: pass
     bgcheck.status, status = 5, bgcheck.status
     bgcheck.join() # bgcheck.status == 5 --> silent exit
     if status: sys.exit(status)
@@ -1480,7 +1479,7 @@ def _reloader_observer(server, app, interval):
                 if os.path.exists(lockfile): os.unlink(lockfile)
                 sys.exit(p.poll())
             elif not server.quiet:
-                print "Reloading server..."
+                print("Reloading server...")
     except KeyboardInterrupt: pass
     if os.path.exists(lockfile): os.unlink(lockfile)
 
@@ -1513,7 +1512,7 @@ class BaseTemplate(object):
         self.name = name
         self.source = source.read() if hasattr(source, 'read') else source
         self.filename = source.filename if hasattr(source, 'filename') else None
-        self.lookup = map(os.path.abspath, lookup)
+        self.lookup = list(map(os.path.abspath, lookup))
         self.encoding = encoding
         self.settings = self.settings.copy() # Copy from class variable
         self.settings.update(settings) # Apply 
@@ -1650,7 +1649,7 @@ class SimpleTemplate(BaseTemplate):
         lineno = 0 # Current line of code
         ptrbuffer = [] # Buffer for printable strings and token tuple instances
         codebuffer = [] # Buffer for generated python code
-        touni = functools.partial(unicode, encoding=self.encoding)
+        touni = functools.partial(str, encoding=self.encoding)
         multiline = dedent = False
 
         def yield_tokens(line):
@@ -1664,7 +1663,7 @@ class SimpleTemplate(BaseTemplate):
             """ Removes comments from a line of code. """
             line = codeline.splitlines()[0]
             try:
-                tokens = list(tokenize.generate_tokens(iter(line).next))
+                tokens = list(tokenize.generate_tokens(iter(line).__next__))
             except tokenize.TokenError:
                 return line.rsplit('#',1) if '#' in line else (line, '')
             for token in tokens:
@@ -1696,8 +1695,8 @@ class SimpleTemplate(BaseTemplate):
 
         for line in template.splitlines(True):
             lineno += 1
-            line = line if isinstance(line, unicode)\
-                        else unicode(line, encoding=self.encoding)
+            line = line if isinstance(line, str)\
+                        else str(line, encoding=self.encoding)
             if lineno <= 2:
                 m = re.search(r"%.*coding[:=]\s*([-\w\.]+)", line)
                 if m: self.encoding = m.group(1)

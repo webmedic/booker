@@ -3,7 +3,7 @@
 
 import sys
 import os
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import ui
 
 from PyQt4 import QtCore, QtGui, uic
@@ -55,7 +55,7 @@ class GuessDialog(QtGui.QDialog):
         self.currentMD = None
         self.book = book
         self.titleText.setText(book.title or "")
-        self.authorText.setText((u', '.join([a.name for a in book.authors])
+        self.authorText.setText((', '.join([a.name for a in book.authors])
                                  or ""))
         ident = models.Identifier.get_by(key='ISBN', book=book)
         if ident:
@@ -75,14 +75,14 @@ class GuessDialog(QtGui.QDialog):
         for plugin in manager.getPluginsOfCategory("Guesser"):
             if isPluginEnabled(plugin.name) and \
                plugin.plugin_object.can_guess(self.book):
-                self.guesser_dict[unicode(plugin.plugin_object.name)] = \
+                self.guesser_dict[str(plugin.plugin_object.name)] = \
                                                            plugin.plugin_object
                 self.guessers.addItem(plugin.plugin_object.name)
-        self.guesser = self.guesser_dict[unicode(self.guessers.currentText())]
+        self.guesser = self.guesser_dict[str(self.guessers.currentText())]
 
     @QtCore.pyqtSlot("QString")
     def on_guessers_currentIndexChanged(self, text):
-        self.guesser = self.guesser_dict[unicode(text)]
+        self.guesser = self.guesser_dict[str(text)]
 
     @QtCore.pyqtSlot()
     def on_guessButton_clicked(self):
@@ -92,18 +92,18 @@ class GuessDialog(QtGui.QDialog):
                  'isbn': None}
         # self.bookList.clear()
         if self.title.isChecked():
-            query['title'] = unicode(self.titleText.text())
+            query['title'] = str(self.titleText.text())
         if self.author.isChecked():
-            query['authors'] = unicode(self.authorText.text())
+            query['authors'] = str(self.authorText.text())
         if self.isbn.isChecked():
-            query['isbn'] = unicode(self.isbnText.text())
+            query['isbn'] = str(self.isbnText.text())
 
         if query['title'] is None and \
            query['authors'] is None and \
            query['isbn'] is None:
             QtGui.QMessageBox.warning(self,
-                                      u'Select something to search',
-                                      u'You need to select at least one '
+                                      'Select something to search',
+                                      'You need to select at least one '
                                        'field to search')
             return
 
@@ -116,18 +116,18 @@ class GuessDialog(QtGui.QDialog):
                                    description=None)
         if self._query:
             try:
-                print self.guesser, type(self.guesser)
+                print((self.guesser, type(self.guesser)))
                 self.md = self.guesser.guess(self._query) or []
-            except Exception, e:
-                print "Guesser exception: %s" % str(e)
+            except Exception as e:
+                print(("Guesser exception: %s" % str(e)))
                 QtGui.QMessageBox.warning(self,
-                                          u'Failed to load data',
+                                          'Failed to load data',
                                           str(e))
                 return
 
             if self.md:
 
-                tpl = u"""
+                tpl = """
 <html>
 <body>
 ${for i,candidate in enumerate(md):}$
@@ -169,12 +169,12 @@ ${:end-for}$
                 self.template = Templite(tpl)
                 t1 = time.time()
                 html = self.template.render(md=self.md)
-                print "Rendered in: %s seconds" % (time.time() - t1)
+                print(("Rendered in: %s seconds" % (time.time() - t1)))
                 self.candidates.page().mainFrame().setHtml(html)
 
             else:
                 self.candidates.page().mainFrame().setHtml(
-                    u"<h3>No matches found for the selected criteria</h3>")
+                    "<h3>No matches found for the selected criteria</h3>")
 
     def updateWithCandidate(self, url):
         cId = int(url.path()[1:-1])
@@ -200,11 +200,11 @@ class BookEditor(QtGui.QWidget):
         self.book = models.Book.get_by(id=book_id)
         if not self.book:
             # Called with invalid book ID
-            print "Wrong book ID"
+            print("Wrong book ID")
         self.title.setText(self.book.title)
         self.authors.setText('|'.join([a.name for a in self.book.authors]))
         if self.book.comments:
-            self.description.setPlainText(unicode(self.book.comments))
+            self.description.setPlainText(str(self.book.comments))
         else:
             self.description.setPlainText("")
         self.ids.clear()
@@ -229,7 +229,7 @@ class BookEditor(QtGui.QWidget):
 
     def is_saved(self, parent=None):
         if self.unsaved:
-            print "There is unsaved data..."
+            print("There is unsaved data...")
             parent = parent if parent is not None else self
             msgBox = QtGui.QMessageBox(parent)
             msgBox.setWindowTitle('Save changes?')
@@ -249,7 +249,7 @@ class BookEditor(QtGui.QWidget):
             else:
                 return False
         else:
-            print "No unsaved data. Accepting event..."
+            print("No unsaved data. Accepting event...")
         return True
 
     def on_title_textEdited(self, string):
@@ -284,7 +284,7 @@ class BookEditor(QtGui.QWidget):
             self.title.setText(md.title)
             self.authors.setText('|'.join(md.authors))
             # FIXME: maybe there are identifier conflicts?
-            items = [unicode(self.ids.itemText(i))
+            items = [str(self.ids.itemText(i))
                                 for i in range(self.ids.count())]
             if md.identifiers is not None:
                 for k, v in md.identifiers:
@@ -301,15 +301,15 @@ class BookEditor(QtGui.QWidget):
     @QtCore.pyqtSlot()
     def on_save_clicked(self):
         # Save the data first
-        self.book.title = unicode(self.title.text())
-        self.book.comments = unicode(self.description.toPlainText())
+        self.book.title = str(self.title.text())
+        self.book.comments = str(self.description.toPlainText())
 
         self.book.authors = []
-        authors = unicode(self.authors.text()).split('|')
+        authors = str(self.authors.text()).split('|')
         for a in authors:
             author = models.Author.get_by(name=a)
             if not author:
-                print "Creating author:", a
+                print(("Creating author:", a))
                 author = models.Author(name=a)
             self.book.authors.append(author)
         models.Author.sanitize()
@@ -317,12 +317,12 @@ class BookEditor(QtGui.QWidget):
         for ident in self.book.identifiers:
             ident.delete()
         for i in range(self.ids.count()):
-            t = unicode(self.ids.itemText(i))
+            t = str(self.ids.itemText(i))
             k, v = t.split(': ', 1)
             i = models.Identifier(key=k, value=v, book=self.book)
 
         self.book.tags = []
-        for tag_name in [unicode(self.tags.item(i).text())
+        for tag_name in [str(self.tags.item(i).text())
                                     for i in range(self.tags.count())]:
             t = models.Tag.get_by(name=tag_name)
             if not t:
@@ -335,7 +335,7 @@ class BookEditor(QtGui.QWidget):
 
     @QtCore.pyqtSlot()
     def on_add_file_clicked(self):
-        file_name = unicode(QtGui.QFileDialog.getOpenFileName(self,
+        file_name = str(QtGui.QFileDialog.getOpenFileName(self,
                                                               'Add File'))
         if file_name and not self.fileList.findItems(file_name,
                                                      QtCore.Qt.MatchExactly):
@@ -447,7 +447,7 @@ class BookEditor(QtGui.QWidget):
             # deberia leerlo desde google.books.
             # El dato clave estaría en datos['thumbnail']
 
-            thumbdata = urllib2.urlopen(
+            thumbdata = urllib.request.urlopen(
                             'http://covers.openlibrary.org/b/isbn/%s-M.jpg' %
                             identifiers['ISBN']).read()
 

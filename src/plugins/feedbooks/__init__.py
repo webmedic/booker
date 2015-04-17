@@ -1,13 +1,13 @@
 from feedparser import parse
 from PyQt4 import QtGui, QtCore, QtWebKit, uic
-import sys, os, urllib
+import sys, os, urllib.request, urllib.parse, urllib.error
 from models import *
 from pprint import pprint
 from math import ceil
 from pluginmgr import BookStore
 from templite import Templite
 import codecs
-import urlparse
+import urllib.parse
 import time
 
 # This gets the main catalog from feedbooks.
@@ -35,7 +35,7 @@ class Catalog(BookStore):
     def operate(self):
         "Show the store"
         if not self.widget:
-            print "Call setWidget first"
+            print("Call setWidget first")
             return
         self.widget.title.setText(self.title)
         if not self.w:
@@ -58,19 +58,19 @@ class Catalog(BookStore):
     showList = operate
             
     def search (self, terms):
-        url = "http://www.feedbooks.com/search.atom?"+urllib.urlencode(dict(query=terms))
+        url = "http://www.feedbooks.com/search.atom?"+urllib.parse.urlencode(dict(query=terms))
         self.crumbs=[self.crumbs[0],["Search: %s"%terms, url]]
         self.openUrl(QtCore.QUrl(url))
 
     def openUrl(self, url):
         if isinstance(url, QtCore.QUrl):
             url = url.toString()
-        url = unicode(url)
+        url = str(url)
         # This happens for catalogs by language
         if url.startswith('/'):
-            url=urlparse.urljoin('http://feedbooks.com',url)
+            url=urllib.parse.urljoin('http://feedbooks.com',url)
         extension = url.split('.')[-1]
-        print "Opening:",url
+        print(("Opening:",url))
         if url.split('/')[-1].isdigit() or url.split('/')[-2].isdigit():
             # A details page
             crumb = ["#%s"%url.split('/')[-1],url]
@@ -89,7 +89,7 @@ class Catalog(BookStore):
                 
             bookdata = bookdata.entries[0]
             title = bookdata.title
-            self.setStatusMessage.emit(u"Downloading: "+title)
+            self.setStatusMessage.emit("Downloading: "+title)
             book = Book.get_by(title = title)
             if not book:
                 # Let's create a lot of data
@@ -128,11 +128,11 @@ class Catalog(BookStore):
     def showBranch(self, url):
         """Trigger download of the branch, then trigger
         parseBranch when it's downloaded"""
-        print "Showing:", url
+        print(("Showing:", url))
         # Disable updates to prevent flickering
         self.w.store_web.setUpdatesEnabled(False)
         self.w.store_web.page().mainFrame().load(QtCore.QUrl(url))
-        self.setStatusMessage.emit(u"Loading: "+url)
+        self.setStatusMessage.emit("Loading: "+url)
         self.w.store_web.page().loadFinished.connect(self.parseBranch)
         return
         
@@ -142,14 +142,14 @@ class Catalog(BookStore):
         an Atom feed from Feedbooks) with the generated HTML.        
         """
         self.w.store_web.page().loadFinished.disconnect(self.parseBranch)
-        url = unicode(self.w.store_web.page().mainFrame().requestedUrl().toString())
-        print "Parsing the branch:", url
+        url = str(self.w.store_web.page().mainFrame().requestedUrl().toString())
+        print(("Parsing the branch:", url))
         t1 = time.time()
-        data = parse(unicode(self.w.store_web.page().mainFrame().toHtml()).encode('utf-8'))
-        print "Parsed branch in: %s seconds"%(time.time()-t1)
+        data = parse(str(self.w.store_web.page().mainFrame().toHtml()).encode('utf-8'))
+        print(("Parsed branch in: %s seconds"%(time.time()-t1)))
         title = data.feed.get('title','')
         if 'page=' in url: # A page
-            print "DELETING LAST CRUMB" 
+            print("DELETING LAST CRUMB") 
             if 'page=' in self.crumbs[-1][1]: 
                 #last one was also a page
                 del self.crumbs[-1]
@@ -173,7 +173,7 @@ class Catalog(BookStore):
                 links.append(entry)
 
         totPages = int(ceil(float(data.feed.get('opensearch_totalresults', 1))/int(data.feed.get('opensearch_itemsperpage', 1))))
-        curPage = int(urlparse.parse_qs(urlparse.urlparse(url).query).get('page',[1])[-1])
+        curPage = int(urllib.parse.parse_qs(urllib.parse.urlparse(url).query).get('page',[1])[-1])
         
         t1 = time.time()
         html = self.template.render(
@@ -184,7 +184,7 @@ class Catalog(BookStore):
             totPages = totPages,
             curPage = int(curPage)
             )
-        print "Rendered in: %s seconds"%(time.time()-t1)
+        print(("Rendered in: %s seconds"%(time.time()-t1)))
         # open('x.html','w+').write(html)
         self.w.store_web.page().mainFrame().setHtml(html)
         self.w.store_web.setUpdatesEnabled(True)

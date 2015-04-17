@@ -6,8 +6,8 @@ import ui
 
 class Main(QtGui.QMainWindow):
 
-    adjWidthTpl = u"<img src=\"book:///%s\" width='100%%'>"
-    normalWidthTpl = u"<img src=\"book:///%s\">"
+    adjWidthTpl = "<img src=\"book:///%s\" width='100%%'>"
+    normalWidthTpl = "<img src=\"book:///%s\">"
 
     def __init__(self, fname):
         QtGui.QMainWindow.__init__(self)
@@ -55,7 +55,7 @@ class Main(QtGui.QMainWindow):
     def on_actionNext_Chapter_triggered(self):
         # Find where on the spine we are
         frame = self.view.page().mainFrame()
-        curTocEntry = unicode(frame.url().toString())[12:]
+        curTocEntry = str(frame.url().toString())[12:]
         try:
             curIdx = self.doc.tocentries.index(curTocEntry)
         except ValueError:
@@ -68,7 +68,7 @@ class Main(QtGui.QMainWindow):
     def on_actionPrevious_Chapter_triggered(self):
         # Find where on the spine we are
         frame = self.view.page().mainFrame()
-        curTocEntry = unicode(frame.url().toString())[12:]
+        curTocEntry = str(frame.url().toString())[12:]
         try:
             curIdx = self.doc.tocentries.index(curTocEntry)
         except ValueError:
@@ -81,7 +81,7 @@ class Main(QtGui.QMainWindow):
         self.openPath(item.contents)
 
     def openPath(self, path, fragment=None):
-        print "Opening:", path
+        print(("Opening:", path))
         path = QtCore.QUrl.fromPercentEncoding(path)
         if self.cur_path != path:
             self.cur_path = path
@@ -96,13 +96,13 @@ class Main(QtGui.QMainWindow):
                 return ans[0]
             return 0
         if typ == 'string':
-            return unicode(ans.toString())
+            return str(ans.toString())
         return ans
 
     def linkClicked(self, url):
         if url.isRelative():  # They all should be
-            frag = unicode(url.fragment())
-            path = unicode(url.path())
+            frag = str(url.fragment())
+            path = str(url.path())
             self.openPath(path, frag)
 
 
@@ -111,7 +111,7 @@ class DownloadReply(QtNetwork.QNetworkReply):
     def __init__(self, parent, url, operation, w):
         self._w = w
         QtNetwork.QNetworkReply.__init__(self, parent)
-        self.content = self._w.doc.getData(unicode(url.path())[1:])
+        self.content = self._w.doc.getData(str(url.path())[1:])
         self.offset = 0
 
         self.setHeader(QtNetwork.QNetworkRequest.ContentTypeHeader,

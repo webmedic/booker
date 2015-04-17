@@ -18,7 +18,7 @@ class Catalog(ShelfView):
         """Get all books from the DB and show them"""
 
         if not self.widget:
-            print "Call setWidget first"
+            print("Call setWidget first")
             return
         self.operate = self.showList
         self.items = {}
@@ -55,7 +55,7 @@ class Catalog(ShelfView):
         
         for b in books:
             icon = QtGui.QIcon(QtGui.QPixmap(b.cover()).scaledToHeight(128, QtCore.Qt.SmoothTransformation))
-            print icon
+            print(icon)
             item = QtGui.QListWidgetItem(icon, b.title, self.shelf)
             item.book = b
             self.items[b.id] = item
@@ -67,7 +67,7 @@ class Catalog(ShelfView):
         """Get all books from the DB and show them"""
 
         if not self.widget:
-            print "Call setWidget first"
+            print("Call setWidget first")
             return
         self.operate = self.showGrid
         self.items = {}
@@ -111,7 +111,7 @@ class Catalog(ShelfView):
                 add_book(b,initial)
             else:
                 add_book(b,'@')
-        keys = grouped_books.keys()
+        keys = list(grouped_books.keys())
         keys.sort()
         for k in keys:
             # Make a shelf

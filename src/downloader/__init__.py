@@ -19,9 +19,9 @@ class Downloads(QtGui.QProgressBar):
 
     def fetch(self, url, destination):
         if url in self.bars:
-            print "Already downloading:", url
+            print(("Already downloading:", url))
             return
-        print "Downloading:", url
+        print(("Downloading:", url))
         address = QtCore.QUrl(url)
         reply = self.manager.get(QtNetwork.QNetworkRequest(address))
         reply.downloadProgress.connect(self.progress)
@@ -32,26 +32,26 @@ class Downloads(QtGui.QProgressBar):
 
     def finished(self):
         reply = self.sender()
-        url = unicode(reply.url().toString())
+        url = str(reply.url().toString())
         _, bar, _, fname = self.bars[url]
-        redirURL = unicode(reply.attribute(
+        redirURL = str(reply.attribute(
             QtNetwork.QNetworkRequest.RedirectionTargetAttribute).toString())
         del self.bars[url]
         bar.deleteLater()
         if redirURL and redirURL != url:
             # Need to redirect
-            print "Following redirect to:", redirURL
+            print(("Following redirect to:", redirURL))
             self.fetch(redirURL, fname)
         else:
             data = str(reply.readAll())
             f = open(fname, 'wb')
             f.write(data)
             f.close()
-            print "Finished downloading:", url
+            print(("Finished downloading:", url))
 
     def progress(self, received, total):
-        url = unicode(self.sender().url().toString())
-        print "progress:", url
+        url = str(self.sender().url().toString())
+        print(("progress:", url))
         _, bar, reply, fname = self.bars[url]
         bar.setMaximum(total)
         bar.setValue(received)
@@ -66,12 +66,12 @@ class Downloads(QtGui.QProgressBar):
             else:
                 tot += bar.maximum()
             val += bar.value()
-        print tot, val
+        print((tot, val))
         self.setMaximum(tot)
         self.setValue(val)
         if tot == 0 or tot == val:
             self.setVisible(False)
-            self.setStatusMessage.emit(u"")
+            self.setStatusMessage.emit("")
         else:
             self.setVisible(True)
 

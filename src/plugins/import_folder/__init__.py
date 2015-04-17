@@ -33,14 +33,14 @@ def import_file(fname):
     def try_import(fname, p):
         metadata=[]
         try:
-            print "Fetching: ",p
+            print(("Fetching: ",p))
             # The guessers go here
             # metadata = get_metadata(p) or []
             metadata = []
-            print "Candidates:", [d.title for d in metadata]
+            print(("Candidates:", [d.title for d in metadata]))
             time.sleep(2)
-        except Exception, e:
-            print e
+        except Exception as e:
+            print(e)
         for data in metadata:
             # Does it look valid?
             if data.title.lower() in p:
@@ -63,13 +63,13 @@ def import_file(fname):
                     author = models.Author.get_by(name=name)
                     if not author:
                         author = models.Author(name = name)
-                        print "Added author: ", name
+                        print(("Added author: ", name))
                     b.authors.append(author)
 
                 # Fetch cover
                 b.fetch_cover()
                 
-                print "Accepted: ", data.title
+                print(("Accepted: ", data.title))
                 f = models.File(file_name=fname, book=b)
                 models.session.commit()
                 return 1
@@ -114,7 +114,7 @@ def import_file(fname):
         
     # #TODO Keep trying in other ways
     
-    print 'Importing as-is'
+    print('Importing as-is')
     b = models.Book.get_by(title = p)
     if not b:
         # TODO: add more metadata
@@ -153,7 +153,7 @@ class ImportFolder(Importer):
         return [self._action1, self._action2]
     
     def do_import_folder(self):
-        fname = unicode(QtGui.QFileDialog.getExistingDirectory(None, "Import Folder"))
+        fname = str(QtGui.QFileDialog.getExistingDirectory(None, "Import Folder"))
         if not fname: return
         # Get a list of all files to be imported
         flist = []
@@ -162,11 +162,11 @@ class ImportFolder(Importer):
                 flist.append(os.path.join(data[0],f))
         for f in progress(flist, "Importing Files","Stop"):
             status = import_file(f)
-            print status
+            print(status)
             
     def do_import_file(self):
-        fname = unicode(QtGui.QFileDialog.getOpenFileName(None, "Import File"))
+        fname = str(QtGui.QFileDialog.getOpenFileName(None, "Import File"))
         if not fname: return
         status = import_file(fname)
-        print status
+        print(status)
                         

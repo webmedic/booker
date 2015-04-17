@@ -15,7 +15,7 @@ class EpubDocument(object):
         # This is done according to this:
         # http://stackoverflow.com/questions/1388467/reading-epub-format
 
-        print "Opening:", fname
+        print(("Opening:", fname))
         try:
             self.book = zipfile.ZipFile(fname, "r")
         except zipfile.BadZipfile:
@@ -33,7 +33,7 @@ class EpubDocument(object):
         self.basepath = os.path.dirname(self.roots[0]) + "/"
         if self.basepath == '/':
             self.basepath = ""
-        print "BASEPATH:", self.basepath
+        print(("BASEPATH:", self.basepath))
 
         data = opf.read()
         self.opf = XML(data)
@@ -51,7 +51,7 @@ class EpubDocument(object):
         self.toc_id = self.spine.attrib.get('toc', None)
         if self.toc_id:
             self.toc_fn = self.manifest_dict[self.toc_id]
-            print "TOC:", self.toc_fn
+            print(("TOC:", self.toc_fn))
             f = self.book.open(self.toc_fn)
             data = f.read()
             self.toc = XML(data)
@@ -71,7 +71,7 @@ class EpubDocument(object):
 
         self.itemrefs = self.spine.findall(
                                     '{http://www.idpf.org/2007/opf}itemref')
-        print "IR:", self.itemrefs
+        print(("IR:", self.itemrefs))
         self.spinerefs = [
             self.manifest_dict[item.attrib['idref']][len(self.basepath):]
                                                     for item in self.itemrefs]
@@ -95,8 +95,8 @@ class EpubDocument(object):
              #self.manifest_dict[item.attrib['idref']][len(self.basepath):]]
                                                     #for item in self.itemrefs]
 
-        print self.tocentries
-        print self.spinerefs
+        print((self.tocentries))
+        print((self.spinerefs))
 
     def getData(self, path):
         """Return the contents of a file in the document"""

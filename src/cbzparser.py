@@ -7,7 +7,7 @@ class CBZDocument(object):
 
     def __init__(self, fname):
 
-        print "Opening:", fname
+        print(("Opening:", fname))
         try:
             self.book = zipfile.ZipFile(fname, "r")
         except zipfile.BadZipfile:
@@ -19,7 +19,7 @@ class CBZDocument(object):
     def getData(self, path):
         """Return the contents of a file in the document"""
 
-        print "GD:", path
+        print(("GD:", path))
         try:
             f = self.book.open(path)
         except KeyError:  # File missing in the zip

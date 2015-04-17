@@ -33,7 +33,7 @@ def pager():
 ${ if totPages > 1: }$
 <div style="text-align: right; width:90%; margin-left: 5%; margin-bottom: 8px;">
 Pages:&nbsp;
-${print pager()}$
+${print(pager())}$
 </div>
 ${:endif}$
 
@@ -98,6 +98,6 @@ ${ if totPages > 1: }$
 <div style="text-align: right; width:90%; margin-left: 5%; margin-bottom: 8px;">
 Pages:&nbsp;
 
-${print pager()}$
+${print(pager())}$
 </div>
 ${:endif}$

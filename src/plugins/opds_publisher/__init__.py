@@ -1,7 +1,7 @@
 from PyQt4 import QtCore, QtGui
 from pluginmgr import Tool
 import multiprocessing
-import Queue
+import queue
 import sys, os
 
 class Plugin(Tool):
@@ -23,24 +23,24 @@ class Plugin(Tool):
             if data is not None:
                 if 'url' in data:
                     QtGui.QMessageBox.information(None, \
-                                                  u'Catalog published', \
-                                                  u'You can access your catalog on: %s'%data['url'], \
+                                                  'Catalog published', \
+                                                  'You can access your catalog on: %s'%data['url'], \
                                                   QtGui.QMessageBox.Ok, \
                                                   QtGui.QMessageBox.NoButton, \
                                                   QtGui.QMessageBox.NoButton)
                 elif 'error' in data:
-                    print "Error publishing catalog: %s"%data['error']
+                    print(("Error publishing catalog: %s"%data['error']))
                     QtGui.QMessageBox.critical(self, \
-                                              u'Failed to publish catalog', \
-                                              u'An error ocurred while trying to publish your catalog.')
+                                              'Failed to publish catalog', \
+                                              'An error ocurred while trying to publish your catalog.')
                 self.timer.stop()
-        except Queue.Empty:
+        except queue.Empty:
             pass
 
     def publish(self, checked):
-        print "Publish: ", checked
+        print(("Publish: ", checked))
         if not checked and self._proc:
-            print "Stopping OPDS server"
+            print("Stopping OPDS server")
             self._proc.terminate()
             self._proc = None
             return 

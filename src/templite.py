@@ -80,11 +80,11 @@ class Templite(object):
         self.__output = []
         eval(self.__code, namespace)
         sys.stdout = __stdout
-        return u''.join(self.__output)
+        return ''.join(self.__output)
     
     def write(self, *args):
         for a in args:
-            self.__output.append(unicode(a))
+            self.__output.append(str(a))
 
 
 if __name__ == '__main__':
@@ -157,7 +157,7 @@ ${:end-for}$
 """
 
     t = Templite(template)
-    print t.render(x=8)
+    print((t.render(x=8)))
 
 
     # Output is:

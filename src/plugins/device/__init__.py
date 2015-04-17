@@ -21,7 +21,7 @@ if dbus:
             return None
             
         def __init__(self):
-            print "INIT: DeviceNotifier"
+            print("INIT: DeviceNotifier")
             self.mainloop=dbus.mainloop.qt.DBusQtMainLoop(set_as_default=True)
             self.systemBus = dbus.SystemBus()
             self.sessionBus = dbus.SessionBus()
@@ -33,8 +33,8 @@ if dbus:
                                         handler_function=self.mountDetected)
 
         def mountDetected(self, sender, mount_id, data):
-            print "New drive mounted at %s" % data[4][7:]
-            print mount_id
-            print data
+            print(("New drive mounted at %s" % data[4][7:]))
+            print(mount_id)
+            print(data)
 
 

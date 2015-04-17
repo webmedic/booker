@@ -2,7 +2,7 @@
 
 # Singleton config object
 
-import ConfigParser
+import configparser
 import os
 from json import dumps, loads
 from utils import BASEPATH
@@ -27,7 +27,7 @@ def setValue(section, key, value):
     value = dumps(value)
     try:
         r = conf.set(section, key, value)
-    except ConfigParser.NoSectionError:
+    except configparser.NoSectionError:
         conf.add_section(section)
         r = conf.set(section, key, value)
     f = open(cfname, 'w')
@@ -42,7 +42,7 @@ class ConfigError(Exception):
         self.msg = msg
 
 
-conf = ConfigParser.SafeConfigParser()
+conf = configparser.SafeConfigParser()
 if not os.path.isfile(cfname):
     open(cfname, 'w').close()
 f = open(cfname, 'r')

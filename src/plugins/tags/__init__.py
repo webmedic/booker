@@ -17,7 +17,7 @@ class Catalog(ShelfView):
         """Get all books from the DB and show them"""
 
         if not self.widget:
-            print "Call setWidget first"
+            print("Call setWidget first")
             return
         self.operate = self.showList
         self.items = {}
@@ -66,7 +66,7 @@ class Catalog(ShelfView):
     def showGrid(self, search = None):
         """Get all books from the DB and show them"""
         if not self.widget:
-            print "Call setWidget first"
+            print("Call setWidget first")
             return
         self.operate = self.showGrid
         self.items = {}

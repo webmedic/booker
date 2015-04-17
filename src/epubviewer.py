@@ -2,6 +2,7 @@ from PyQt4 import QtNetwork, QtCore, QtGui, uic
 import sys
 from epubparser import EpubDocument
 import feedparser
+#import speedparser
 import ui
 from config import *
 import hashlib
@@ -12,7 +13,7 @@ class Main(QtGui.QMainWindow):
     def __init__(self, fname):
         QtGui.QMainWindow.__init__(self)
 
-        self.fname = fname
+        self.fname = fname.encode('utf-8')
         self.epub = EpubDocument(fname)
         uifile = ui.path('epubviewer.ui')
         uic.loadUi(uifile, self)
@@ -56,7 +57,7 @@ class Main(QtGui.QMainWindow):
         frame = self.view.page().mainFrame()
         sv = frame.scrollPosition().y()
         frame = self.view.page().mainFrame()
-        curSpineRef = unicode(frame.url().toString())[12:]
+        curSpineRef = str(frame.url().toString())[12:]
         setValue("epubviewer",
                  "position-" + hashlib.sha224(self.fname).hexdigest(),
                  [sv, curSpineRef])
@@ -84,7 +85,7 @@ class Main(QtGui.QMainWindow):
     def on_actionNext_Chapter_triggered(self):
         # Find where on the spine we are
         frame = self.view.page().mainFrame()
-        curSpineRef = unicode(frame.url().toString())[12:]
+        curSpineRef = str(frame.url().toString())[12:]
         try:
             curIdx = [j for i, j in self.epub.tocentries].index(curSpineRef)
         except ValueError:
@@ -97,7 +98,7 @@ class Main(QtGui.QMainWindow):
     def on_actionPrevious_Chapter_triggered(self):
         # Find where on the spine we are
         frame = self.view.page().mainFrame()
-        curSpineRef = unicode(frame.url().toString())[12:]
+        curSpineRef = str(frame.url().toString())[12:]
         try:
             curIdx = [j for i, j in self.epub.tocentries].index(curSpineRef)
         except ValueError:
@@ -133,13 +134,13 @@ class Main(QtGui.QMainWindow):
                 return ans[0]
             return 0
         if typ == 'string':
-            return unicode(ans.toString())
+            return str(ans.toString())
         return ans
 
     def linkClicked(self, url):
         if url.isRelative():  # They all should be
-            frag = unicode(url.fragment())
-            path = unicode(url.path())
+            frag = str(url.fragment())
+            path = str(url.path())
             self.openPath(path, frag)
 
 
@@ -148,13 +149,13 @@ class DownloadReply(QtNetwork. QNetworkReply):
     def __init__(self, parent, url, operation, w):
         self._w = w
         QtNetwork.QNetworkReply.__init__(self, parent)
-        self.content = self._w.epub.getData(unicode(url.path())[1:])
+        self.content = self._w.epub.getData(str(url.path())[1:])
         self.offset = 0
 
         self.setHeader(QtNetwork.QNetworkRequest.ContentTypeHeader,
-                       QtCore.QVariant("application/binary"))
+                       "application/binary")
         self.setHeader(QtNetwork.QNetworkRequest.ContentLengthHeader,
-                       QtCore.QVariant(len(self.content)))
+                       len(self.content))
         QtCore.QTimer.singleShot(0, self, QtCore.SIGNAL("readyRead()"))
         QtCore.QTimer.singleShot(0, self, QtCore.SIGNAL("finished()"))
         self.open(self.ReadOnly | self.Unbuffered)

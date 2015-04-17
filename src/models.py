@@ -5,7 +5,7 @@
 # Aranduka mailing list about the schema.
 
 import os
-import urllib2
+import urllib3
 from elixir import *
 import utils
 import downloader
@@ -14,13 +14,13 @@ import downloader
 def initDB():
     "Create or initialize the database"
     dburl = "sqlite:///%s" % (os.path.join(utils.BASEPATH, 'books.sqlite'))
-    print "Setting up database ", dburl
+    print(("Setting up database ", dburl))
     metadata.bind = dburl
     metadata.bind.echo = False
     setup_all()
     dbpath = os.path.join(utils.BASEPATH, "books.sqlite")
     if not os.path.isfile(dbpath):
-        print "Creating database", dbpath
+        print(("Creating database", dbpath))
         create_all()
         session.commit()
 
@@ -71,7 +71,7 @@ class Book (Entity):
             os.path.join(utils.BOOKPATH,
                 utils.slugify(str(self.id) + "-" + self.title +
                               "-" + authorlist) + "." + extension))
-        print "Fetching file: ", url
+        print(("Fetching file: ", url))
         # Queue the download
         downloader.downloader.fetch(url, fname)
         f = File(file_name=fname)
@@ -128,8 +128,8 @@ class Book (Entity):
             for isbn in isbns:
                 # Try openlibrary
                 try:
-                    print "Trying openlibrary with ISBN: '%s'" % isbn.value
-                    u = urllib2.urlopen(
+                    print(("Trying openlibrary with ISBN: '%s'" % isbn.value))
+                    u = urllib.request.urlopen(
                         'http://covers.openlibrary.org/b/isbn/%s-M.jpg'
                         '?default=false' % isbn.value)
                     data = u.read()
@@ -138,14 +138,14 @@ class Book (Entity):
                     thumb.write(data)
                     thumb.close()
                     break
-                except urllib2.HTTPError:
+                except urllib.error.HTTPError:
                     pass
 
                 # Then we try LibraryThing
                 # Maybe using my devkey here is not a very good idea.
                 try:
-                    print "Trying librarything with ISBN: '%s'" % isbn.value
-                    u = urllib2.urlopen('http://covers.librarything.com'
+                    print(("Trying librarything with ISBN: '%s'" % isbn.value))
+                    u = urllib.request.urlopen('http://covers.librarything.com'
                                         '/devkey/%s/large/isbn/%s' %
                                         ('09fc520942eb98c27391d2b8e02f3866',
                                          isbn.value))
@@ -156,7 +156,7 @@ class Book (Entity):
                         thumb.write(data)
                         thumb.close()
                         break
-                except urllib2.HTTPError:
+                except urllib.error.HTTPError:
                     pass
 
 
@@ -182,7 +182,7 @@ class Author (Entity):
 
     @classmethod
     def sanitize(cls):
-        print "Sanitizing authors table"
+        print("Sanitizing authors table")
         authors = cls.query.filter_by(books=None).all()
         if authors:
             for author in authors:
@@ -210,13 +210,13 @@ class File (Entity):
         """Deletes a file from the database and
            optionally from the filesystem"""
         if deleteFile:
-            print "Deleting file: %s" % self.file_name
+            print(("Deleting file: %s" % self.file_name))
             try:
                 os.unlink(self.file_name)
             except OSError:
                 pass
         else:
-            print "Deleting only from database"
+            print("Deleting only from database")
         super(Entity, self).delete()
 
     def __repr__(self):
