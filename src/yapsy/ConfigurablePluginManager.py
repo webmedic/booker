@@ -1,22 +1,22 @@
-#!/usr/bin/python
-# -*- coding: utf-8; tab-width: 4; indent-tabs-mode: t -*-
+# -*- coding: utf-8; tab-width: 4; indent-tabs-mode: t; python-indent: 4 -*-
 
 """
+Role
+====
+
 Defines plugin managers that can handle configuration files similar to
 the ini files manipulated by Python's ConfigParser module.
+
+API
+===
 """
 
-import sys, os
-import logging
-import ConfigParser
-
-from IPlugin import IPlugin
+from yapsy.IPlugin import IPlugin
 
 
-from PluginManager import PluginManager,PluginManagerDecorator
-from PluginManager import PLUGIN_NAME_FORBIDEN_STRING
-
-
+from yapsy.PluginManagerDecorator import PluginManagerDecorator
+from yapsy.PluginManager import PLUGIN_NAME_FORBIDEN_STRING
+	
 
 class ConfigurablePluginManager(PluginManagerDecorator):
 	"""
@@ -30,9 +30,9 @@ class ConfigurablePluginManager(PluginManagerDecorator):
 	(only the plugins that explicitly requires to save configuration
 	options will have this kind of section).
 
-	.. warning:: when giving/building the list of plugins to activate by
-	    default, there must not be any space in the list (neither in the
-	    names nor in between)
+	.. warning:: when giving/building the list of plugins to activate
+	             by default, there must not be any space in the list
+	             (neither in the names nor in between)
 	"""
 	
 	CONFIG_SECTION_NAME = "Plugin Management"
@@ -44,7 +44,7 @@ class ConfigurablePluginManager(PluginManagerDecorator):
 				 decorated_manager=None,
 				 # The following args will only be used if we need to
 				 # create a default PluginManager
-				 categories_filter={"Default":IPlugin}, 
+				 categories_filter=None, 
 				 directories_list=None, 
 				 plugin_info_ext="yapsy-plugin"):
 		"""
@@ -57,6 +57,8 @@ class ConfigurablePluginManager(PluginManagerDecorator):
 		they want the configuration to be updated (e.g. write on file
 		at each change or at precise time intervalls or whatever....)
 		"""
+		if categories_filter is None:
+			categories_filter = {"Default":IPlugin}
 		# Create the base decorator class
 		PluginManagerDecorator.__init__(self,decorated_manager,
 										categories_filter,
@@ -253,11 +255,11 @@ class ConfigurablePluginManager(PluginManagerDecorator):
 		for each plugin candidate look for its category, load it and
 		stores it in the appropriate slot of the ``category_mapping``.
 		"""
- 		self._component.loadPlugins()
+		self._component.loadPlugins(callback)
 		# now load the plugins according to the recorded configuration
 		if self.config_parser.has_section(self.CONFIG_SECTION_NAME):
 			# browse all the categories
-			for category_name in self._component.category_mapping.keys():
+			for category_name in list(self._component.category_mapping.keys()):
 				# get the list of plugins to be activated for this
 				# category
 				option_name = "%s_plugins_to_load"%category_name

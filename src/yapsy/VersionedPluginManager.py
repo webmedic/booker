@@ -1,17 +1,23 @@
-#!/usr/bin/python
-# -*- coding: utf-8; tab-width: 4; indent-tabs-mode: t -*-
+# -*- coding: utf-8; tab-width: 4; indent-tabs-mode: t; python-indent: 4 -*-
 
 """
+Role
+====
+
 Defines the basic interface for a plugin manager that also keeps track
 of versions of plugins
+
+API
+===
 """
 
-import sys, os
-import logging
+
 from distutils.version import StrictVersion
 
-from PluginManager import PluginManager, PluginInfo, PluginManagerDecorator
-from IPlugin import IPlugin
+from yapsy.PluginInfo import PluginInfo
+from yapsy.IPlugin import IPlugin
+from yapsy.PluginManagerDecorator import PluginManagerDecorator
+
 
 class VersionedPluginInfo(PluginInfo):
 	"""
@@ -21,7 +27,7 @@ class VersionedPluginInfo(PluginInfo):
 	
 	def __init__(self, plugin_name, plugin_path):
 		"""
-		Set the namle and path of the plugin as well as the default
+		Set the name and path of the plugin as well as the default
 		values for other usefull variables.
 		"""
 		PluginInfo.__init__(self, plugin_name, plugin_path)
@@ -34,69 +40,68 @@ class VersionedPluginInfo(PluginInfo):
 
 class VersionedPluginManager(PluginManagerDecorator):
 	"""
-	Manage several plugins by ordering them in several categories with
-	versioning capabilities.
+	Handle plugin versioning by making sure that when several
+	versions are present for a same plugin, only the latest version is
+	manipulated via the standard methods (eg for activation and
+	deactivation)
+	
+	More precisely, for operations that must be applied on a single
+	named plugin at a time (``getPluginByName``,
+	``activatePluginByName``, ``deactivatePluginByName`` etc) the
+	targetted plugin will always be the one with the latest version.
+	
+	.. note:: The older versions of a given plugin are still reachable
+	          via the ``getPluginsOfCategoryFromAttic`` method.
 	"""
-
+	
 	def __init__(self, 
 				 decorated_manager=None,
 				 categories_filter={"Default":IPlugin}, 
 				 directories_list=None, 
 				 plugin_info_ext="yapsy-plugin"):
 		"""
-		Create the plugin manager and record the ConfigParser instance
-		that will be used afterwards.
-		
-		The ``config_change_trigger`` argument can be used to set a
-		specific method to call when the configuration is
-		altered. This will let the client application manage the way
-		they want the configuration to be updated (e.g. write on file
-		at each change or at precise time intervalls or whatever....)
+		Create the plugin manager and instancitate the attic where
+		obsolete plugins will be stored.
 		"""
 		# Create the base decorator class
 		PluginManagerDecorator.__init__(self,decorated_manager,
 										categories_filter,
 										directories_list,
 										plugin_info_ext)
-		# prepare the mapping of the latest version of each plugin
 		self.setPluginInfoClass(VersionedPluginInfo)
-		self._prepareVersionMapping()
-
-	def _prepareVersionMapping(self):
-		"""
-		Create a mapping that will make it possible to easily provide
-		the latest version of each plugin.
-		"""
-		self.latest_mapping = {}
-		for categ in self._component.categories_interfaces.keys():
-			self.latest_mapping[categ] = []
+		# prepare the storage for the early version of the plugins,
+		# for which only the latest version is the one that will be
+		# kept in the "core" plugin storage.
+		self._prepareAttic()
 		
-
+	def _prepareAttic(self):
+		"""
+		Create and correctly initialize the storage where the wrong
+		version of the plugins will be stored.
+		"""
+		self._attic = {}
+		for categ in self.getCategories():
+			self._attic[categ] = []
+	
 	def setCategoriesFilter(self, categories_filter):
 		"""
 		Set the categories of plugins to be looked for as well as the
 		way to recognise them.
 
-		The ``categories_filter`` first defines the various categories
-		in which the plugins will be stored via its keys and it also
-		defines the interface tha has to be inherited by the actual
-		plugin class belonging to each category.
-
-		A call to this class will also reset the mapping of the latest
-		version for each plugin.
+		Note: will also reset the attic toa void inconsistencies.
 		"""
-		self._component.setCategoriesFilter(self, categories_filter)
-		# prepare the mapping of the latest version of each plugin
-		self._prepareVersionMapping()
-
-
+		self._component.setCategoriesFilter(categories_filter)
+		self._prepareAttic()
+	
 	def getLatestPluginsOfCategory(self,category_name):
 		"""
+		DEPRECATED(>1.8): Please consider using getPluginsOfCategory
+		instead.
+		
 		Return the list of all plugins belonging to a category.
 		"""
-# 		print "%s.getLatestPluginsOfCategory" % self.__class__
-		return self.latest_mapping[category_name]
-
+		return self.getPluginsOfCategory(category_name)
+	
 	def loadPlugins(self, callback=None):
 		"""
 		Load the candidate plugins that have been identified through a
@@ -105,18 +110,31 @@ class VersionedPluginManager(PluginManagerDecorator):
 		In addition to the baseclass functionality, this subclass also
 		needs to find the latest version of each plugin.
 		"""
-# 		print "%s.loadPlugins" % self.__class__
+		self._prepareAttic()
 		self._component.loadPlugins(callback)
-		
-		# Search through all the loaded plugins to find the latest
-		# version of each.
-		for categ, items in self._component.category_mapping.iteritems():
-			unique_items = {}
-			for item in items:
-				if item.name in unique_items:
-					stored = unique_items[item.name]
-					if item.version > stored.version:
-						unique_items[item.name] = item
+		for categ in self.getCategories():
+			latest_plugins = {}
+			allPlugins = self.getPluginsOfCategory(categ)
+			# identify the latest version of each plugin
+			for plugin in allPlugins:
+				name = plugin.name
+				version = plugin.version
+				if name in latest_plugins:
+					if version > latest_plugins[name].version:
+						older_plugin = latest_plugins[name]
+						latest_plugins[name] = plugin
+						self.removePluginFromCategory(older_plugin,categ)
+						self._attic[categ].append(older_plugin)
+					else:
+						self.removePluginFromCategory(plugin,categ)
+						self._attic[categ].append(plugin)
 				else:
-					unique_items[item.name] = item
-			self.latest_mapping[categ] = unique_items.values()
+					latest_plugins[name] = plugin
+
+	def getPluginsOfCategoryFromAttic(self,categ):
+		"""
+		Access the older version of plugins for which only the latest
+		version is available through standard methods.
+		"""
+		return self._attic[categ]
+			
