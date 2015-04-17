@@ -7,7 +7,7 @@ Module implementing Queue.
 from PyQt4.QtGui import QWidget
 from PyQt4.QtCore import pyqtSignature
 
-from Ui_queue import Ui_Form
+from .Ui_queue import Ui_Form
 
 class Queue(QWidget, Ui_Form):
     """

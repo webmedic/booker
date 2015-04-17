@@ -8,9 +8,9 @@ import sys
 from PyQt4.QtGui import QMainWindow, QApplication
 from PyQt4.QtCore import pyqtSignature
 
-from Ui_aranduka import Ui_MainWindow
-from main import MainView
-from queue import Queue
+from .Ui_aranduka import Ui_MainWindow
+from .main import MainView
+from .queue import Queue
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     """

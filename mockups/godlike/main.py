@@ -7,7 +7,7 @@ Module implementing MainView.
 from PyQt4.QtGui import *
 from PyQt4.QtCore import pyqtSignature
 
-from Ui_main import Ui_Form
+from .Ui_main import Ui_Form
 
 class MainView(QWidget, Ui_Form):
     """
