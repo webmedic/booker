@@ -6,12 +6,18 @@ try:
 except NameError:
     from sets import Set as set
 
+
+def cmp(a, b):
+    return (a > b) - (a < b)
+
 orig_cmp = cmp
+
+
 # [].sort
 def sort_list(l, cmp=None, key=None, reverse=False):
     try:
         l.sort(cmp, key, reverse)
-    except TypeError, e:
+    except TypeError as e:
         if not str(e).startswith('sort expected at most 1 arguments'):
             raise
         if cmp is None:

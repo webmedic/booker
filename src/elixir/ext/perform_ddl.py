@@ -98,7 +98,7 @@ class PreloadDataEntityBuilder(EntityBuilder):
                 data = data()
             insert = schema_item.insert()
             connection.execute(insert,
-                [dict(zip(columns, values)) for values in data])
+                [dict(list(zip(columns, values))) for values in data])
 
         self.entity.table.append_ddl_listener('after-create', onload)
 
