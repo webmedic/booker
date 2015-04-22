@@ -2,3 +2,13 @@ TODO
 ====
 
  * Make a TODO list. Check!
+ * fix icons not showing up correctly (they are svg and we are using a qrc file maybe to do with one of these)
+ ** maybe upgrade to pyqt5
+ ** maybe convert to defining the icons in python and not use the qrc file
+ * convert gui components to using qtwebkit
+ * find a way to make the folders cross platform and also portable so it can be run from a thumbdrive
+ * expand database model to include more information about the books
+ * add search engine so that documents can be searched (planning on using whoosh)
+ * add Command line interface
+ * add py to exe for compiling windows exe
+ * add pyapp for making macos application package
