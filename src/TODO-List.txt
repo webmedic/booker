@@ -12,3 +12,4 @@ TODO
  * add Command line interface
  * add py to exe for compiling windows exe
  * add pyapp for making macos application package
+ * Save window size and location and reload it on next startup
