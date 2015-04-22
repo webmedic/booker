@@ -472,6 +472,13 @@ def main():
     app = QtGui.QApplication(sys.argv)
     window = Main()
     window.show()
+    # this will remove minimized status 
+    # and restore window with keeping maximized/normal state
+    window.setWindowState(window.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive)
+
+    # this will activate the window
+    window.activateWindow()
+    
     # It's exec_ because exec is a reserved word in Python
     sys.exit(app.exec_())
 
